@@ -44,6 +44,11 @@ function CamperList({ bunk_id, date }) {
                         }
                     >
                         <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                        {camper.bunk_log ? (
+                            <span style={{ color: 'green' }}>Yes </span>
+                        ) : (
+                            <span style={{ color: 'red' }}>No </span>
+                        )}
                         {camper.camper_first_name} {camper.camper_last_name}
                         </span>
                     </NavLink>

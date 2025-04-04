@@ -12,13 +12,19 @@ function BunkLogsTableViewCard({ bunkData }) {
   const [loading, setLoading] = useState(false);  // Changed to false since data is passed as prop
   const [data, setData] = useState(bunkData);
 
-  const filterNotOnCamp = (data) => {
-      return data.filter((item) => item.not_on_camp !== '1');
-    }
+  const filterNotOnCamp = (campers) => {
+    return campers.filter((camper) => camper.bunk_log?.not_on_camp == false);
+  }
 
   useEffect(() => {
-    setData(filterNotOnCamp(bunkData));
-  }, [bunkData]);
+          if (bunkData && bunkData.campers) {
+              setData(filterNotOnCamp(bunkData.campers));
+          }
+      }, [bunkData]);
+
+  console.log('BunkLogsTableViewCard - Data:', data);
+
+  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -59,37 +65,37 @@ function BunkLogsTableViewCard({ bunkData }) {
             <tbody>
               {data?.map((item) => {
                 // Format the date
-                const formattedDate = new Date(item.date).toISOString().split('T')[0];
+                //const formattedDate = new Date(item.date).toISOString().split('T')[0];
                 
                 return (
                   <tr key={item.id}>
                     <td className="p-2 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 shrink-0 mr-2 sm:mr-3">
-                          <img className="rounded-full" src={Image01} width="40" height="40" alt={`${item.first_name} ${item.last_name}`} />
+                          <img className="rounded-full" src={Image01} width="40" height="40" alt={`${item.camper_first_name} ${item.camper_last_name}`} />
                         </div>
                         <Link className="font-medium text-gray-800 dark:text-gray-100" to={`/camper/${item.id}`}>
-                          {item.first_name} {item.last_name}
+                          {item.camper_first_name} {item.camper_last_name}
                         </Link>
                       </div>
                     </td>
                     <td className="p-1 whitespace-wrap">
-                      <div className="text-center text-sm text-black-200">{formattedDate}</div>
+                      <div className="text-center text-sm text-black-200">{item.bunk_log?.date}</div>
                     </td>
-                    <td className={`p-1 whitespace-wrap bg-${item.social}`}>
-                      <div className={`text-center text-sm text-black-200`}>{item.social}</div>
+                    <td className={`p-1 whitespace-wrap bg-${item.bunk_log?.social_score}`}>
+                      <div className={`text-center text-sm text-black-200`}>{item.bunk_log?.social_score}</div>
                     </td>
-                    <td className={`p-1 whitespace-wrap bg-${item.behavior}`}>
-                      <div className={`text-center text-sm text-black-200`}>{item.behavior}</div>
+                    <td className={`p-1 whitespace-wrap bg-${item.bunk_log?.behavior_score}`}>
+                      <div className={`text-center text-sm text-black-200`}>{item.bunk_log?.behavior_score}</div>
                     </td>
-                    <td className={`p-1 whitespace-wrap bg-${item.participation}`}>
-                      <div className={`text-center text-sm text-black-200`}>{item.participation}</div>
+                    <td className={`p-1 whitespace-wrap bg-${item.bunk_log?.participation_score}`}>
+                      <div className={`text-center text-sm text-black-200`}>{item.bunk_log?.participation_score}</div>
                     </td>
                     <td className="p-4 whitespace-wrap">
-                      <div className="text-left text-sm text-black-200" dangerouslySetInnerHTML={{ __html: item.notes }} />
+                      <div className="text-left text-sm text-black-200" dangerouslySetInnerHTML={{ __html: item.bunk_log?.description }} />
                     </td>
                     <td className="p-2 whitespace-nowrap">
-                      <div className="text-sm text-center">{item.counselor_id}</div>
+                      <div className="text-sm text-center">{item.bunk_log?.counselor}</div>
                     </td>
                   </tr>
                 );

@@ -66,7 +66,7 @@ function BunkDashboard() {
     fetchData();
   }, [bunk_id, selectedDate]);
 
-  console.log("sexy data", data); // Debug
+  console.log("my data", data); // Debug
   const cabin_name = data?.bunk?.cabin?.name || "Bunk X"; // Default to "Bunk 19" if cabin_name is not available
   const session_name = data?.bunk?.session?.name || "Session X"; // Default to "Session X" if session_name is not available
   const bunk_label = `${cabin_name} - ${session_name}`; // Default to "Bunk 19" if bunk_label is not available // Format date as YYYY-MM-DD
@@ -131,6 +131,7 @@ function BunkDashboard() {
 
             {/* Cards */}
             <div className="grid grid-cols-12 gap-6">
+              {console.log(data.campers)}
               <NotOnCampCard bunkData={data} />
               <UnitHeadHelpRequestedCard bunkData={data} />
               <CamperCareHelpRequestedCard bunkData={data} />
