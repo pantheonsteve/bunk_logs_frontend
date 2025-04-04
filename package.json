@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "axios": "^1.7.9",
+    "quill": "^2.0.3"
+  }
+}
