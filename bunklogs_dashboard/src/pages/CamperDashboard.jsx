@@ -13,10 +13,6 @@ import DashboardCard08 from '../partials/dashboard/DashboardCard08';
 import Banner from '../partials/Banner';
 import ScoresLineChartCard from '../partials/dashboard/ScoresLineChartCard';
 
-const CamperName = "James Bresnick";
-const BunkName = "Bunk 19";
-const camper_id = "12345";
-
 function CamperDashboard() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);

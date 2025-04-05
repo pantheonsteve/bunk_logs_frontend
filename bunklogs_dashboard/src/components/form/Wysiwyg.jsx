@@ -30,7 +30,6 @@ const Wysiwyg = () => {
 
     return (
         <div>
-            <h1>WYSIWYG Editor</h1>
             <div ref={editorRef} style={{ height: '300px' }}></div>
         </div>
     );
