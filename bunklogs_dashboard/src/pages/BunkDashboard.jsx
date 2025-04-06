@@ -17,9 +17,12 @@ import CategoryScoreCard from '../partials/dashboard/CategoryScoreCard';
 import BunkLabelCard from '../partials/dashboard/BunkLabelCard';
 import BunkLogForm from '../components/form/BunkLogForm';
 import Wysiwyg from '../components/form/Wysiwyg';
+import BunkLogFormModal from '../components/modals/BunkLogFormModal';
 
 function BunkDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [bunkLogModalOpen, setBunkLogFormModalOpen] = useState(false);
+  const [selectedCamperId, setSelectedCamperId] = useState(null);
   const { bunk_id } = useParams();
   const location = useLocation();
   const [data, setData] = useState([]);
@@ -38,6 +41,11 @@ function BunkDashboard() {
     setSelectedDate(new Date(newDate));
     console.log('New date selected:', newDate);
   }, []);
+
+  const handleOpenBunkLogModal = (camperId) => {
+    setSelectedCamperId(camperId);
+    setBunkLogFormModalOpen(true);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -73,7 +81,13 @@ function BunkDashboard() {
     <div className="flex h-screen overflow-hidden">
 
       {/* Sidebar */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} date={selected_date}/>
+      <Sidebar 
+        sidebarOpen={sidebarOpen} 
+        setSidebarOpen={setSidebarOpen} 
+        date={selected_date} 
+        bunk={bunk_id} 
+        openBunkModal={handleOpenBunkLogModal}
+      />
 
       {/* Content area */}
       <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -136,14 +150,27 @@ function BunkDashboard() {
               </div>
             </div>
 
+            {console.log("my data", data)} {/* Debug */}
+
             {/* Cards */}
             <div className="grid grid-cols-12 gap-6">
+            <BunkLogFormModal 
+              id="bunklogform-modal" 
+              modalOpen={bunkLogModalOpen} 
+              setModalOpen={setBunkLogFormModalOpen} 
+              title="Create Bunk Log"
+            >
+              <BunkLogForm 
+                bunk_id={bunk_id}
+                camper_id={selectedCamperId}
+                date={selected_date}
+              />
+              </BunkLogFormModal>
               <NotOnCampCard bunkData={data} />
               <UnitHeadHelpRequestedCard bunkData={data} />
               <CamperCareHelpRequestedCard bunkData={data} />
               <BunkLogsTableViewCard bunkData={data} />
             </div>
-            <BunkLogForm bunkData={data} />
           </div>
         </main>
       </div>

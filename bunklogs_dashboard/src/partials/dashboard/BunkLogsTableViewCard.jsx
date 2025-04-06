@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import AccordionTableCamperItem from '../../components/bunklogs/AccordionTableCamperItem';
 
 import Image01 from '../../images/user-36-05.jpg';
 import Image02 from '../../images/user-36-06.jpg';
@@ -8,6 +9,27 @@ import Image04 from '../../images/user-36-08.jpg';
 import Image05 from '../../images/user-36-09.jpg';
 
 function BunkLogsTableViewCard({ bunkData }) {
+
+  // Sample data for the table
+  const items = [
+    {
+      id: '0',
+      image: Image01,
+      camper_first_name: 'Mark',
+      camper_last_name: 'Cameron',
+      email: 'mark.cameron@app.com',
+      counselor_name: 'John Doe',
+      date: '2023-10-01',
+      social_score: '5',
+      behavior_score: '4',
+      participation_score: '3',
+      camper_care_help: 'true',
+      unit_head_help: 'false',
+      descriptionTitle: 'Excepteur sint occaecat cupidatat.',
+      descriptionBody: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis. Ut enim ad minim veniam quis. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    },
+  ];
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);  // Changed to false since data is passed as prop
   const [data, setData] = useState(bunkData);
@@ -21,6 +43,9 @@ function BunkLogsTableViewCard({ bunkData }) {
       setData(filterNotOnCamp(bunkData.campers));
     }
   }, [bunkData]);
+
+  console.log("Bunk Data", bunkData); // Debug
+  console.log("Bunk Data - Campers", bunkData?.campers); // Debug
 
   // Get the Counselor Name from the ID
   const getCounselorName = (counselorId, data) => {
@@ -57,9 +82,11 @@ function BunkLogsTableViewCard({ bunkData }) {
         
         {/* Table Container with horizontal scroll for mobile */}
         <div className="overflow-x-auto">
-          <table className="w-full table-auto">
-            {/* Table header */}
-            <thead className="text-xs font-semibold uppercase text-gray-500 bg-gray-100 dark:text-gray-400 dark:bg-gray-700/50">
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700/60">
+          <div className="overflow-x-auto w-full">
+            <table className="table-auto w-full dark:text-gray-300">
+                {/* Table header */}
+              <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs">
               <tr>
                 {/* Column width: 2/12 */}
                 <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
@@ -82,67 +109,43 @@ function BunkLogsTableViewCard({ bunkData }) {
                   <div className="font-semibold text-center">Participation</div>
                 </th>
                 {/* Column width: 3/12 */}
-                <th className="w-3/12 p-2 border-b border-gray-200 dark:border-gray-700">
-                  <div className="font-semibold text-left">Notes</div>
+                <th className="w-64 p-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="font-semibold text-left">Camper Care Help</div>
                 </th>
                 {/* Column width: 2/12 */}
-                <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
-                  <div className="font-semibold text-center">Counselor</div>
+                <th className="w-64 p-2 border-b border-gray-200 dark:border-gray-700">
+                  <div className="font-semibold text-center">Unit Head Help</div>
                 </th>
               </tr>
             </thead>
-            
-            {/* Table body */}
-            <tbody className="text-sm divide-y divide-gray-200 dark:divide-gray-700">
-              {data && data.length > 0 ? (
-                data.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td className="p-2">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 shrink-0 mr-2 sm:mr-3">
-                          <img className="rounded-full border border-gray-200" src={Image01} width="32" height="32" alt={`${item.camper_first_name} ${item.camper_last_name}`} />
-                        </div>
-                        <Link className="font-medium text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400" to={`/camper/${item.id}`}>
-                          {item.camper_first_name} {item.camper_last_name}
-                        </Link>
-                      </div>
-                    </td>
-                    <td className="p-2 text-center text-gray-600 dark:text-gray-400">
-                      {item.bunk_log?.date}
-                    </td>
-                    <td className={`${getScoreBackgroundColor(item.bunk_log?.social_score)}`}>
-                      <div className={`text-center py-1 px-2 font-medium`}>
-                        {item.bunk_log?.social_score || 'N/A'}
-                      </div>
-                    </td>
-                    <td className={`${getScoreBackgroundColor(item.bunk_log?.behavior_score)}`}>
-                      <div className={`text-center py-1 px-2 font-medium`}>
-                        {item.bunk_log?.behavior_score || 'N/A'}
-                      </div>
-                    </td>
-                    <td className={`${getScoreBackgroundColor(item.bunk_log?.participation_score)}`}>
-                      <div className={`text-center py-1 px-2 font-medium`}>
-                        {item.bunk_log?.participation_score || 'N/A'}
-                      </div>
-                    </td>
-                    <td className="p-2">
-                      <div className="max-h-20 overflow-y-auto text-sm text-gray-600 dark:text-gray-400" 
-                        dangerouslySetInnerHTML={{ __html: item.bunk_log?.description || 'No notes provided' }} />
-                    </td>
-                    <td className="p-2 text-center text-gray-600 dark:text-gray-400">
-                      {getCounselorName(item.bunk_log?.counselor, bunkData)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="p-4 text-center text-gray-500 dark:text-gray-400">
-                    No camper data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                { 
+                  data.map(item => {
+                    return (
+                      <AccordionTableCamperItem
+                        key={item.id}
+                        id={item.id}
+                        image={item.image}
+                        camper_first_name={item.camper_first_name}
+                        camper_last_name={item.camper_last_name}
+                        counselor_name={item.bunk_log.counselor}
+                        social_score={item.bunk_log.social_score}
+                        behavior_score={item.bunk_log.behavior_score}
+                        participation_score={item.bunk_log.participation_score}
+                        camper_care_help={item.bunk_log.request_camper_care_help}
+                        unit_head_help={item.bunk_log.request_unit_head_help}
+                        email={item.email}
+                        location={item.location}
+                        date={item.bunk_log.date}
+                        amount={item.amount}
+                        descriptionTitle={item.descriptionTitle}
+                        descriptionBody={item.bunk_log.description}
+                      />
+                    )
+                  })
+                }
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>

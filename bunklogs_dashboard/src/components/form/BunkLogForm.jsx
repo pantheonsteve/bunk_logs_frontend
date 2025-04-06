@@ -3,28 +3,31 @@ import axios from 'axios';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Wysiwyg from './Wysiwyg';
 
-function BunkLogForm() {
+function BunkLogForm({ bunk_id, camper_id, date }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { bunk_id, camper_id } = useParams();
+  const params = useParams();
   
-  // Extract camper and date info from state (passed from BunkDashboard/CamperList)
-  const camperData = location.state?.camperData || {};
-  const selectedDate = location.state?.selectedDate 
-    ? new Date(location.state.selectedDate) 
-    : new Date();
+  // Use props or fallback to params
+  const bunkIdToUse = bunk_id || params.bunk_id;
+  const camperIdToUse = camper_id || params.camper_id;
+  const dateToUse = date || (location.state?.selectedDate 
+    ? new Date(location.state.selectedDate).toISOString().split('T')[0]
+    : new Date().toISOString().split('T')[0]);
   
-    console.log('Camper Data:', camperData);
   // For Quill editor
   const editorRef = useRef(null);
   const quillRef = useRef(null);
   
+  // State for camper data
+  const [camperData, setCamperData] = useState(null);
+  
   // Form state
   const [formData, setFormData] = useState({
-    bunk_id: bunk_id || '',
-    camper_id: camper_id || '',
-    counselor_id: '', // Will be auto-populated from logged in user in the future
-    date: selectedDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
+    bunk_id: bunkIdToUse,
+    camper_id: camperIdToUse,
+    counselor_id: '',
+    date: dateToUse,
     not_on_camp: false,
     unit_head_help_requested: false,
     camper_care_help_requested: false,
@@ -41,6 +44,27 @@ function BunkLogForm() {
   
   // Get counselors for the dropdown
   const [counselors, setCounselors] = useState([]);
+
+  console.log('Camper Data:', camperData);
+  
+  // Fetch camper data when camper_id changes
+  useEffect(() => {
+    async function fetchCamperData() {
+      if (camperIdToUse) {
+        try {
+          const response = await axios.get(
+            `http://127.0.0.1:8000/api/v1/campers/${camperIdToUse}`
+          );
+          setCamperData(response.data);
+        } catch (err) {
+          console.error('Error fetching camper data:', err);
+          setError('Failed to load camper data');
+        }
+      }
+    }
+    
+    fetchCamperData();
+  }, [camperIdToUse]);
   
   // Initialize Quill editor
   useEffect(() => {
@@ -74,24 +98,15 @@ function BunkLogForm() {
     }
   }, [formData.not_on_camp]);
   
-  // Fetch counselors and set initial camper data
+  // Fetch counselors
   useEffect(() => {
     // In a real app, you would fetch this from API or use context
-    // This is a placeholder for demo purposes
     setCounselors([
       { id: 1, name: 'Jane Smith' },
       { id: 2, name: 'John Doe' },
       { id: 3, name: 'Alex Johnson' },
     ]);
-    
-    // Set initial camper data if available
-    if (camperData && camperData.id) {
-      setFormData(prev => ({
-        ...prev,
-        camper_id: camperData.id,
-      }));
-    }
-  }, [camperData]);
+  }, []);
   
   // Handle form input changes
   const handleChange = (e) => {
@@ -129,8 +144,8 @@ function BunkLogForm() {
       setSuccess(true);
       // Redirect back to bunk dashboard after successful submission
       setTimeout(() => {
-        navigate(`/bunk/${bunk_id}`, { 
-          state: { selectedDate: selectedDate }
+        navigate(`/bunk/${bunkIdToUse}`, { 
+          state: { selectedDate: new Date(dateToUse) }
         });
       }, 2000);
       
@@ -143,8 +158,8 @@ function BunkLogForm() {
   };
   
   // Get camper name
-  const camperName = camperData?.camper_first_name && camperData?.camper_last_name 
-    ? `${camperData.camper_first_name} ${camperData.camper_last_name}`
+  const camperName = camperData?.first_name && camperData?.last_name 
+    ? `${camperData.first_name} ${camperData.last_name}`
     : 'Selected Camper';
   
   return (
@@ -165,6 +180,7 @@ function BunkLogForm() {
         </div>
       )}
       
+      {/* Form content continues as before */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Date - Read only, comes from context */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

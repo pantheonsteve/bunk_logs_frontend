@@ -10,6 +10,8 @@ function Sidebar({
   setSidebarOpen,
   variant = 'default',
   date, // Default to today's date
+  bunk,
+  openBunkModal,
 }) {
   const location = useLocation();
   const { pathname } = location;
@@ -137,7 +139,11 @@ function Sidebar({
                       <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
                         <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
                           <li>
-                            <CamperList bunk_id={30} date={date} />
+                          <CamperList 
+                            bunk_id={bunk} 
+                            date={date}
+                            openBunkModal={openBunkModal} 
+                          />
                           </li>
                         </ul>
                       </div>
