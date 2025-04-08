@@ -21,13 +21,15 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
   
   // State for camper data
   const [camperData, setCamperData] = useState(null);
+
+  console.log('camperIdToUse:', camperIdToUse);
   
   // Form state
   const [formData, setFormData] = useState({
     bunk_id: bunkIdToUse,
     camper_id: camperIdToUse,
     counselor_id: '',
-    date: dateToUse,
+    date: date,
     not_on_camp: false,
     unit_head_help_requested: false,
     camper_care_help_requested: false,
@@ -36,6 +38,14 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
     social_score: 3,
     description: '',
   });
+  
+  // Update form data when camperIdToUse changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      camper_id: camperIdToUse
+    }));
+  }, [camperIdToUse]);
   
   // Loading state
   const [loading, setLoading] = useState(false);
@@ -53,7 +63,7 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
       if (camperIdToUse) {
         try {
           const response = await axios.get(
-            `http://127.0.0.1:8000/api/v1/campers/${camperIdToUse}`
+            `http://127.0.0.1:8000/api/v1/bunklogs/${bunkIdToUse}/${date}`
           );
           setCamperData(response.data);
         } catch (err) {
@@ -65,6 +75,12 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
     
     fetchCamperData();
   }, [camperIdToUse]);
+
+  console.log('Form Data:', formData);
+  console.log('Bunk ID:', bunkIdToUse);
+  console.log('Camper ID:', camperIdToUse);
+  console.log('Date:', dateToUse);
+  console.log('CamperData:', camperData);
   
   // Initialize Quill editor
   useEffect(() => {
@@ -99,14 +115,17 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
   }, [formData.not_on_camp]);
   
   // Fetch counselors
+  console.log(camperData);
   useEffect(() => {
     // In a real app, you would fetch this from API or use context
-    setCounselors([
-      { id: 1, name: 'Jane Smith' },
-      { id: 2, name: 'John Doe' },
-      { id: 3, name: 'Alex Johnson' },
-    ]);
-  }, []);
+    const counselors = camperData?.bunk?.counselors || [];
+    setCounselors(
+      counselors.map(counselor => ({
+        id: counselor.id,
+        name: `${counselor.first_name} ${counselor.last_name}`
+      }))
+  );
+  }, [camperData]);
   
   // Handle form input changes
   const handleChange = (e) => {
@@ -122,6 +141,12 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    
+    // Log complete form data including WYSIWYG content
+    console.log('Form Data being submitted:', {
+      ...formData,
+      description: formData.description || (quillRef.current ? quillRef.current.root.innerHTML : '')
+    });
     
     try {
       // Reset certain fields if camper is not on camp
@@ -157,9 +182,15 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
     }
   };
   
+  console.log('CAMPER DATA:', camperData);
+  console.log(camperIdToUse);
+  console.log('CAMPER DATA type:', typeof camperData, camperData);
+
+  const campers = camperData?.campers || [];
+  const selectedCamper = campers.find(c => c.camper_id == camperIdToUse);
   // Get camper name
-  const camperName = camperData?.first_name && camperData?.last_name 
-    ? `${camperData.first_name} ${camperData.last_name}`
+  const camperName = selectedCamper
+    ? `${selectedCamper.camper_first_name} ${selectedCamper.camper_last_name}`
     : 'Selected Camper';
   
   return (
@@ -180,9 +211,14 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
         </div>
       )}
       
-      {/* Form content continues as before */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Date - Read only, comes from context */}
+        {/* Hidden field for camper_id */}
+        <input 
+          type="hidden" 
+          name="camper_id" 
+          value={camperIdToUse} 
+        />
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -190,7 +226,7 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
             </label>
             <input 
               type="date" 
-              value={formData.date} 
+              value={date ? dateToUse : ''} 
               readOnly 
               className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 cursor-not-allowed"
             />
@@ -198,7 +234,7 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
               Date is set from the dashboard
             </p>
           </div>
-          
+
           {/* Counselor Selection */}
           <div>
             <label htmlFor="counselor_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -221,7 +257,7 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
             </select>
           </div>
         </div>
-        
+
         {/* Not on Camp Checkbox */}
         <div className="space-y-2">
           <div className="flex items-center">
@@ -229,9 +265,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
               id="not_on_camp"
               name="not_on_camp"
               type="checkbox"
+              className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
               checked={formData.not_on_camp}
               onChange={handleChange}
-              className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
             />
             <label htmlFor="not_on_camp" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
               Camper not on camp today
@@ -241,7 +277,7 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
             Check this if the camper was absent from camp today. All other fields will be disabled.
           </p>
         </div>
-        
+
         {/* Conditional Fields - Only show if camper is on camp */}
         {!formData.not_on_camp && (
           <>
@@ -252,9 +288,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
                   id="unit_head_help_requested"
                   name="unit_head_help_requested"
                   type="checkbox"
+                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
                   checked={formData.unit_head_help_requested}
                   onChange={handleChange}
-                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
                 />
                 <label htmlFor="unit_head_help_requested" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Unit Head Help Requested
@@ -266,9 +302,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
                   id="camper_care_help_requested"
                   name="camper_care_help_requested"
                   type="checkbox"
+                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
                   checked={formData.camper_care_help_requested}
                   onChange={handleChange}
-                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
                 />
                 <label htmlFor="camper_care_help_requested" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Camper Care Help Requested
@@ -294,9 +330,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
                   type="range"
                   min="1"
                   max="5"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                   value={formData.behavior_score}
                   onChange={handleChange}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>Poor</span>
@@ -318,9 +354,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
                   type="range"
                   min="1"
                   max="5"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                   value={formData.participation_score}
                   onChange={handleChange}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>Poor</span>
@@ -342,9 +378,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
                   type="range"
                   min="1"
                   max="5"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                   value={formData.social_score}
                   onChange={handleChange}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>Poor</span>
@@ -359,12 +395,15 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
                 Daily Report
               </label>
               <div className="border border-gray-300 rounded-md dark:border-gray-600 overflow-hidden">
-                <Wysiwyg ref={editorRef} />
+                <Wysiwyg 
+                  ref={editorRef} 
+                  onChange={(content) => setFormData(prev => ({ ...prev, description: content }))}
+                />
               </div>
             </div>
           </>
         )}
-        
+
         {/* Submit Button */}
         <div className="flex justify-end">
           <button

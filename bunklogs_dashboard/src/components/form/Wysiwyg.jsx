@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 
-const Wysiwyg = () => {
+const Wysiwyg = ({ onChange }) => {
     const editorRef = useRef(null);
     const quillRef = useRef(null);
 
@@ -23,10 +23,14 @@ const Wysiwyg = () => {
             });
 
             quillRef.current.on('text-change', function() {
-                console.log(quillRef.current.root.innerHTML);
+                const content = quillRef.current.root.innerHTML;
+                console.log('WYSIWYG content:', content);
+                if (onChange) {
+                    onChange(content);
+                }
             });
         }
-    }, []);
+    }, [onChange]);
 
     return (
         <div>

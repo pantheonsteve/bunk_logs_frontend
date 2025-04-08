@@ -52,14 +52,12 @@ function BunkDashboard() {
       try {
         setLoading(true);
         const formattedDate = selectedDate.toISOString().split('T')[0];
-        console.log('New date selected:', formattedDate); // formattedDate is in the correct format "YYYY-MM-DD"
         
         const response = await axios.get(
           `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${formattedDate}`
         );
-        
-        console.log('Response - Bunklogs:', response.data); // Debug
-        setData(response.data);
+         
+        setData(response.data); // Debug
       } catch (error) {
         console.error('Error:', error);
         setError(error);
@@ -71,7 +69,6 @@ function BunkDashboard() {
     fetchData();
   }, [bunk_id, selectedDate]);
 
-  console.log("my data", data); // Debug
   const cabin_name = data?.bunk?.cabin?.name || "Bunk X"; // Default if cabin_name is not available
   const session_name = data?.bunk?.session?.name || "Session X"; // Default if session_name is not available
   const bunk_label = `${cabin_name} - ${session_name}`; 
@@ -151,6 +148,7 @@ function BunkDashboard() {
             </div>
 
             {console.log("my data", data)} {/* Debug */}
+            {console.log('date', selected_date)} {/* Debug */}
 
             {/* Cards */}
             <div className="grid grid-cols-12 gap-6">
