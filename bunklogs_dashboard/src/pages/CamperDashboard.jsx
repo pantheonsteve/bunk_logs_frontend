@@ -30,7 +30,7 @@ function CamperDashboard() {
         //console.log('Fetching data for:', formattedDate); // Debug
         
         const response = await axios.get(
-          `https://dev-camper-care-bunk-logs.pantheonsite.io/api/v1/camper/${camper_id}`
+          `http://127.0.0.1:8000//api/v1/camper/${camper_id}`
         );
         
         console.log('Response:', response.data); // Debug
@@ -45,6 +45,8 @@ function CamperDashboard() {
     
     fetchData();
   }, [camper_id]);
+
+  console.log('Camper Data:', data); // Debug
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -66,7 +68,7 @@ function CamperDashboard() {
 
               {/* Left: Title */}
               <div className="mb-4 sm:mb-0">
-                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"><CamperTitleCard camper_id = {camper_id}/></h1>
+                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">{data?.camper?.first_name} {data?.camper?.last_name}</h1>
               </div>
 
               {/* Right: Actions */}
@@ -83,9 +85,6 @@ function CamperDashboard() {
 
           </div>
         </main>
-
-        <Banner />
-
       </div>
     </div>
   );

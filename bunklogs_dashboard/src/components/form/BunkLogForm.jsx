@@ -3,17 +3,27 @@ import axios from 'axios';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Wysiwyg from './Wysiwyg';
 
-function BunkLogForm({ bunk_id, camper_id, date }) {
+function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
+
+  console.log('bunk_id baby:', bunk_id);
+  console.log('camper_id baby:', camper_id);
+  console.log('date baby', date);
   
   // Use props or fallback to params
-  const bunkIdToUse = bunk_id || params.bunk_id;
+  const bunkIdToUse = bunk_id || params.bunk_id; //WORKING
   const camperIdToUse = camper_id || params.camper_id;
   const dateToUse = date || (location.state?.selectedDate 
     ? new Date(location.state.selectedDate).toISOString().split('T')[0]
-    : new Date().toISOString().split('T')[0]);
+    : new Date().toISOString().split('T')[0]); //WORKING
+  const Data = data || null;
+  const bunk_assignment = Data?.campers?.find(c => c.camper_id == camperIdToUse)?.bunk_assignment?.id || null;
+
+  console.log('bunk_assignment', bunk_assignment);
+  console.log('dateToUse:', dateToUse); //WORKING
+  console.log('DATA:', Data);
   
   // For Quill editor
   const editorRef = useRef(null);
@@ -23,16 +33,19 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
   const [camperData, setCamperData] = useState(null);
 
   console.log('camperIdToUse:', camperIdToUse);
+  console.log('bunkIdToUse:', bunkIdToUse);
+
   
   // Form state
   const [formData, setFormData] = useState({
-    bunk_id: bunkIdToUse,
+    bunk_id: bunkIdToUse, //WORKING
     camper_id: camperIdToUse,
-    counselor_id: '',
-    date: date,
+    bunk_assignment: bunk_assignment,
+    counselor: '',
+    date: dateToUse, //WORKING
     not_on_camp: false,
-    unit_head_help_requested: false,
-    camper_care_help_requested: false,
+    request_unit_head_help: false,
+    request_camper_care_help: false,
     behavior_score: 3,
     participation_score: 3,
     social_score: 3,
@@ -43,7 +56,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
-      camper_id: camperIdToUse
+      camper_id: camperIdToUse,
+      bunk_assignment: bunk_assignment, 
+      date: dateToUse,
     }));
   }, [camperIdToUse]);
   
@@ -77,9 +92,9 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
   }, [camperIdToUse]);
 
   console.log('Form Data:', formData);
-  console.log('Bunk ID:', bunkIdToUse);
+  console.log('Bunk ID:', bunkIdToUse); //WORKING
   console.log('Camper ID:', camperIdToUse);
-  console.log('Date:', dateToUse);
+  console.log('Date:', dateToUse); //WORKING
   console.log('CamperData:', camperData);
   
   // Initialize Quill editor
@@ -142,6 +157,13 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
     setLoading(true);
     setError(null);
     
+    // Form validation
+    if (!formData.counselor) {
+      setError('Please select a counselor');
+      setLoading(false);
+      return;
+    }
+    
     // Log complete form data including WYSIWYG content
     console.log('Form Data being submitted:', {
       ...formData,
@@ -152,31 +174,63 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
       // Reset certain fields if camper is not on camp
       const submissionData = { ...formData };
       if (submissionData.not_on_camp) {
-        submissionData.unit_head_help_requested = false;
-        submissionData.camper_care_help_requested = false;
+        submissionData.request_unit_head_help = false;
+        submissionData.request_camper_care_help = false;
         submissionData.behavior_score = null;
         submissionData.participation_score = null;
         submissionData.social_score = null;
         submissionData.description = '';
       }
       
+      // Get API base URL from environment variable or use default
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api/v1';
+      
       // API call to submit the form
       const response = await axios.post(
-        'http://127.0.0.1:8000/api/v1/bunklogs/create',
-        submissionData
+        `${API_BASE_URL}/bunklogs/`,
+        submissionData,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
       
-      setSuccess(true);
-      // Redirect back to bunk dashboard after successful submission
-      setTimeout(() => {
-        navigate(`/bunk/${bunkIdToUse}`, { 
-          state: { selectedDate: new Date(dateToUse) }
-        });
-      }, 2000);
+      console.log('API Response:', response);
+      
+      if (response.status === 201 || response.status === 200) {
+        setSuccess(true);
+        
+        // Close the modal and trigger data refresh instead of redirecting
+        setTimeout(() => {
+          if (onClose) {
+            onClose();
+            // Refresh the page data by making a new API call
+            // This will be handled by the parent component via the onClose callback
+          } else {
+            // Fallback to original redirect behavior if no onClose provided
+            navigate(`/bunk/${bunkIdToUse}`, { 
+              state: { selectedDate: new Date(dateToUse) }
+            });
+          }
+        }, 1500);
+      } else {
+        setError(`Unexpected response: ${response.status}`);
+      }
       
     } catch (err) {
       console.error('Error submitting form:', err);
-      setError(err.response?.data?.message || 'Failed to submit bunk log');
+      if (err.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError(`Error ${err.response.status}: ${err.response.data?.message || 'Failed to submit bunk log'}`);
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('Network error: No response received from server');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError(`Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -188,11 +242,12 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
 
   const campers = camperData?.campers || [];
   const selectedCamper = campers.find(c => c.camper_id == camperIdToUse);
+  console.log('Selected Camper:', selectedCamper);
   // Get camper name
   const camperName = selectedCamper
     ? `${selectedCamper.camper_first_name} ${selectedCamper.camper_last_name}`
     : 'Selected Camper';
-  
+
   return (
     <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
@@ -210,6 +265,8 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
           {error}
         </div>
       )}
+
+      
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hidden field for camper_id */}
@@ -237,13 +294,13 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
 
           {/* Counselor Selection */}
           <div>
-            <label htmlFor="counselor_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label htmlFor="counselor" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Reporting Counselor
             </label>
             <select
-              id="counselor_id"
-              name="counselor_id"
-              value={formData.counselor_id}
+              id="counselor"
+              name="counselor"
+              value={formData.counselor}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
@@ -285,28 +342,28 @@ function BunkLogForm({ bunk_id, camper_id, date }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-center">
                 <input
-                  id="unit_head_help_requested"
-                  name="unit_head_help_requested"
+                  id="request_unit_head_help"
+                  name="request_unit_head_help"
                   type="checkbox"
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
-                  checked={formData.unit_head_help_requested}
+                  checked={formData.request_unit_head_help}
                   onChange={handleChange}
                 />
-                <label htmlFor="unit_head_help_requested" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="request_unit_head_help" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Unit Head Help Requested
                 </label>
               </div>
               
               <div className="flex items-center">
                 <input
-                  id="camper_care_help_requested"
-                  name="camper_care_help_requested"
+                  id="request_camper_care_help"
+                  name="request_camper_care_help"
                   type="checkbox"
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
-                  checked={formData.camper_care_help_requested}
+                  checked={formData.request_camper_care_help}
                   onChange={handleChange}
                 />
-                <label htmlFor="camper_care_help_requested" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="request_camper_care_help" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Camper Care Help Requested
                 </label>
               </div>

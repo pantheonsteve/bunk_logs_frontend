@@ -22,11 +22,14 @@ function BunkLogsCamperViewCard({camperData}) {
       console.log('Rendering BunkLogsCamperViewCard:', camperData); // Debug
 
       const filterNoNotes = (data) => {
-        return data.filter((item) => item.notes !== false);
+        return data.filter((item) => item?.description !== false);
       }
 
+      const bunk_logs = camperData.bunk_logs;
+      console.log('Bunk Logs:', bunk_logs); // Debug
+
       useEffect(() => {
-        setData(filterNoNotes(camperData));
+        setData(data.filter((item) => item?.description !== false));
       }, [camperData]);
 
       if (loading) return <p>Loading...</p>;
@@ -76,7 +79,7 @@ function BunkLogsCamperViewCard({camperData}) {
                     </thead>
                     {/* Table body */}
                     <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
-                    {data.map((item) => (
+                    {bunk_logs.map((item) => (
                         <tr key={item.nid}>
                             <td className="p-3 whitespace-wrap">
                               <Link 
@@ -86,23 +89,23 @@ function BunkLogsCamperViewCard({camperData}) {
                                 <div className="text-center text-sm text-black-200">{item.date}</div>
                               </Link>
                             </td>
-                            <td className={`p-1 whitespace-wrap bg-${item.social}`}>
-                                <div className="text-center text-sm text-black-200">{item.social}</div>
+                            <td className={`p-1 whitespace-wrap bg-${item.social_score}`}>
+                                <div className="text-center text-sm text-black-200">{item.social_score}</div>
                             </td>
-                            <td className={`p-1 whitespace-wrap bg-${item.behavior}`}>
-                                <div className="text-center text-sm text-black-200">{item.behavior}</div>
+                            <td className={`p-1 whitespace-wrap bg-${item.behavior_score}`}>
+                                <div className="text-center text-sm text-black-200">{item.behavior_score}</div>
                             </td>
-                            <td className={`p-1 whitespace-wrap bg-${item.participation}`}>
-                                <div className="text-center text-sm text-black-200">{item.participation}</div>
+                            <td className={`p-1 whitespace-wrap bg-${item.participation_score}`}>
+                                <div className="text-center text-sm text-black-200">{item.participation_score}</div>
                             </td>
                             <td className="p-3 whitespace-wrap">
-                                <div className="text-left text-sm text-black-200" dangerouslySetInnerHTML={{ __html: item.notes }} />
+                                <div className="text-left text-sm text-black-200" dangerouslySetInnerHTML={{ __html: item.description }} />
                             </td>
                             <td className="p-1 whitespace-nowrap">
-                                <div className="text-center text-sm text-green-500">{item.camper_care_help}</div>
+                                <div className="text-center text-sm text-green-500">{item.request_camper_care_help}</div>
                             </td>
                             <td className="p-1 whitespace-nowrap">
-                                <div className="text-center text-sm text-green-500">{item.unit_head_help}</div>
+                                <div className="text-center text-sm text-green-500">{item.request_unit_head_help}</div>
                             </td>
                             <td className="p-2 whitespace-nowrap">
                                 <div className="text-sm text-center">{item.reporting_counselor}</div>

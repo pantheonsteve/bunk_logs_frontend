@@ -3,7 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import axios from 'axios';
 
 
-function CamperList({ bunk_id, date, openBunkModal }) {
+function CamperList({ bunk_id, date, openBunkModal, refreshTrigger }) {
 
     const [data, setData] = useState([]);
     const [error, setError] = useState(null);
@@ -28,7 +28,7 @@ function CamperList({ bunk_id, date, openBunkModal }) {
           }
         };
         fetchData();
-    }, [bunk_id, date]);
+    }, [bunk_id, date, refreshTrigger]); // Added refreshTrigger as a dependency
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -43,7 +43,7 @@ function CamperList({ bunk_id, date, openBunkModal }) {
                         onClick={(e) => {
                           e.stopPropagation();
                           // Use the function from props and pass camper_id
-                          openBunkModal(camper.camper_id);
+                          openBunkModal(camper.camper_id, camper.bunk_assignment.id);
                         }}
                       >
                         <span>
@@ -58,7 +58,7 @@ function CamperList({ bunk_id, date, openBunkModal }) {
                           )}
                           </span>
                           <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">    
-                          {camper.camper_first_name} {camper.camper_last_name}
+                           {camper.camper_first_name} {camper.camper_last_name}
                         </span>
                       </button>
                     </p>

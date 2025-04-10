@@ -9,6 +9,8 @@ function UnitHeadHelpRequestedCard({ bunkData }) {
     const [loading, setLoading] = useState(false);  // Changed to false since data is passed as prop
     const [data, setData] = useState(bunkData);
 
+    console.log('BunkData:', bunkData); // Debug
+
     const filterUnitHeadHelp = (campers) => {
         return campers.filter((camper) => camper.bunk_log?.request_unit_head_help == true);
     }

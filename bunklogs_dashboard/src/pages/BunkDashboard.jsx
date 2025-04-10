@@ -23,6 +23,7 @@ function BunkDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bunkLogModalOpen, setBunkLogFormModalOpen] = useState(false);
   const [selectedCamperId, setSelectedCamperId] = useState(null);
+  const [selectedBunkAssignmentID, setBunkAssignmentId] = useState(null);
   const { bunk_id } = useParams();
   const location = useLocation();
   const [data, setData] = useState([]);
@@ -42,8 +43,9 @@ function BunkDashboard() {
     console.log('New date selected:', newDate);
   }, []);
 
-  const handleOpenBunkLogModal = (camperId) => {
+  const handleOpenBunkLogModal = (camperId, camper_bunk_assignment_id) => {
     setSelectedCamperId(camperId);
+    setBunkAssignmentId(camper_bunk_assignment_id);
     setBunkLogFormModalOpen(true);
   };
 
@@ -68,6 +70,13 @@ function BunkDashboard() {
     
     fetchData();
   }, [bunk_id, selectedDate]);
+
+  const handleFormClose = () => {
+    setBunkLogFormModalOpen(false);
+    setSelectedCamperId(null);
+    setBunkAssignmentId(null);
+    fetchData();
+  }
 
   const cabin_name = data?.bunk?.cabin?.name || "Bunk X"; // Default if cabin_name is not available
   const session_name = data?.bunk?.session?.name || "Session X"; // Default if session_name is not available
@@ -162,6 +171,8 @@ function BunkDashboard() {
                 bunk_id={bunk_id}
                 camper_id={selectedCamperId}
                 date={selected_date}
+                data={data}
+                onClose={handleFormClose}
               />
               </BunkLogFormModal>
               <NotOnCampCard bunkData={data} />

@@ -50,10 +50,12 @@ function ScoresLineChartCard({ camperData }) {
         .sort((a, b) => new Date(a.date) - new Date(b.date))
         .map(entry => ({
           date: formatDate(entry.date),
-          social: parseInt(entry.social),
-          behavior: parseInt(entry.behavior),
-          participation: parseInt(entry.participation)
+          social: parseInt(entry.social_score),
+          behavior: parseInt(entry.behavior_score),
+          participation: parseInt(entry.participation_score)
         }));
+
+      console.log('Processed Data:', processedData); // Debug
 
       const createDataset = (key, label, color) => ({
         label,

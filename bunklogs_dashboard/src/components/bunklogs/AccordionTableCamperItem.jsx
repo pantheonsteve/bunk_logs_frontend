@@ -84,10 +84,10 @@ function AccordionTableCamperItem(props) {
         <td colSpan="10" className="px-2 first:pl-5 last:pr-5 py-3">
           <div className="bg-gray-50 dark:bg-gray-950/[0.15] dark:text-gray-400 p-3 -mt-3">
             <div className="text-sm mb-3">
-              <div className="font-medium text-gray-800 dark:text-gray-100 mb-1">{props.counselor_name}</div>
-              <div>{props.descriptionBody}</div>
+              {/* Note: Using dangerouslySetInnerHTML requires that content is properly sanitized to prevent XSS attacks */}
+              <div dangerouslySetInnerHTML={{ __html: props.descriptionBody }}></div>
+              <div className="font-medium text-gray-800 dark:text-gray-100 mb-1">Reporting Counselor: {props.counselor_name}</div>
             </div>
-            <button className="btn-sm bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white">Approve</button>
           </div>
         </td>
       </tr>

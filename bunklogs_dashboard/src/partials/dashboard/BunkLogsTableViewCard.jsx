@@ -59,6 +59,8 @@ function BunkLogsTableViewCard({ bunkData }) {
     return "Unknown";
   }
 
+  console.log("Counselor Name", getCounselorName("1", data)); // Debug
+
   // Score background color mapping
   const getScoreBackgroundColor = (score) => {
     if (!score) return "bg-gray-100";
@@ -120,6 +122,8 @@ function BunkLogsTableViewCard({ bunkData }) {
             </thead>
                 { 
                   data.map(item => {
+                    const counselor = item?.bunk_assignment?.bunk?.counselors?.find(c => c.id === item.bunk_log.counselor) || "Unknown";
+                    const counselorName = `${counselor.first_name} ${counselor.last_name}`;
                     return (
                       <AccordionTableCamperItem
                         key={item.id}
@@ -127,7 +131,7 @@ function BunkLogsTableViewCard({ bunkData }) {
                         image={item.image}
                         camper_first_name={item.camper_first_name}
                         camper_last_name={item.camper_last_name}
-                        counselor_name={item.bunk_log.counselor}
+                        counselor_name={counselorName}
                         social_score={item.bunk_log.social_score}
                         behavior_score={item.bunk_log.behavior_score}
                         participation_score={item.bunk_log.participation_score}
