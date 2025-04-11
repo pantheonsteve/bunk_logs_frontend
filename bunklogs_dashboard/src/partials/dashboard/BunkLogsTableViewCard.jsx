@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AccordionTableCamperItem from '../../components/bunklogs/AccordionTableCamperItem';
+import CamperLogsBunkViewItem from '../../components/bunklogs/CamperLogsBunkViewItem';
 
 import Image01 from '../../images/user-36-05.jpg';
 import Image02 from '../../images/user-36-06.jpg';
@@ -125,9 +125,10 @@ function BunkLogsTableViewCard({ bunkData }) {
                     const counselor = item?.bunk_assignment?.bunk?.counselors?.find(c => c.id === item.bunk_log.counselor) || "Unknown";
                     const counselorName = `${counselor.first_name} ${counselor.last_name}`;
                     return (
-                      <AccordionTableCamperItem
+                      <CamperLogsBunkViewItem
                         key={item.id}
                         id={item.id}
+                        camper_id={item.camper_id}
                         image={item.image}
                         camper_first_name={item.camper_first_name}
                         camper_last_name={item.camper_last_name}

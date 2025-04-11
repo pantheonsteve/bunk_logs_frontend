@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import CamperLogsCamperViewItem from '../../components/bunklogs/CamperLogsCamperViewItem';
 
 
 import Image01 from '../../images/user-36-05.jpg';
@@ -7,7 +8,6 @@ import Image02 from '../../images/user-36-06.jpg';
 import Image03 from '../../images/user-36-07.jpg';
 import Image04 from '../../images/user-36-08.jpg';
 import Image05 from '../../images/user-36-09.jpg';
-
 
 function BunkLogsCamperViewCard({camperData}) {
 
@@ -22,11 +22,13 @@ function BunkLogsCamperViewCard({camperData}) {
       console.log('Rendering BunkLogsCamperViewCard:', camperData); // Debug
 
       const filterNoNotes = (data) => {
-        return data.filter((item) => item?.description !== false);
+        return camperData.filter((item) => item?.description !== '');
       }
 
       const bunk_logs = camperData.bunk_logs;
-      console.log('Bunk Logs:', bunk_logs); // Debug
+      console.log('Bunk Logs:', bunk_logs); // Works
+      console.log('Camper Data:', camperData); // Debug
+      
 
       useEffect(() => {
         setData(data.filter((item) => item?.description !== false));
@@ -36,6 +38,18 @@ function BunkLogsCamperViewCard({camperData}) {
       if (error) return <p>Error: {error.message}</p>;
 
       console.log('Rendering BunkLogsCamperViewCard:', data); // Debug
+      console.log('Bunk Assignments:', camperData.bunk_assignments); // Debug
+      
+      const getBunkIdFromBunkAssignment = (bunk_assignment) => {
+        if (camperData.bunk_assignments && camperData.bunk_assignments.length > 0) {
+            const bunkAssignment = camperData.bunk_assignments.find(assignment => assignment.id === bunk_assignment);
+            if (bunkAssignment) {
+                return bunkAssignment.bunk_id;
+            }
+        }
+      } // Debug
+
+        console.log('Bunk ID:', getBunkIdFromBunkAssignment('9')); // Debug
 
       return (
 
@@ -44,85 +58,48 @@ function BunkLogsCamperViewCard({camperData}) {
 
                 {/* Table */}
                 <div className="overflow-x-auto">
-                <table className="table-auto w-full">
-                    {/* Table header */}
-                    <thead className="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50">
-                    <tr>
-                        <th className="p-3 whitespace-wrap">
-                        <div className="font-semibold text-center">Date</div>
-                        </th>
-                        <th className="p-1 whitespace-wrap">
-                        <div className="font-semibold text-center">Social</div>
-                        </th>
-                        <th className="p-1 whitespace-wrap">
-                        <div className="font-semibold text-center">Behavior</div>
-                        </th>
-                        <th className="p-1 whitespace-wrap">
-                        <div className="font-semibold text-center">Participation</div>
-                        </th>
-                        <th className="p-4 whitespace-nowrap">
-                        <div className="font-semibold text-center">Counselor Notes</div>
-                        </th>
-                        <th className="p-1 whitespace-wrap">
-                        <div className="font-semibold text-left">Camper Care Help</div>
-                        </th>
-                        <th className="p-1 whitespace-wrap">
-                        <div className="font-semibold text-left">Unit Head Help</div>
-                        </th>
-                        <th className="p-2 whitespace-nowrap">
-                        <div className="font-semibold text-left">Reporting Counselor</div>
-                        </th>
-                        <th className="p-4 whitespace-nowrap">
-                        <div className="font-semibold text-center">Camper Care Notes</div>
-                        </th>
-                    </tr>
-                    </thead>
-                    {/* Table body */}
-                    <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
-                    {bunk_logs.map((item) => (
-                        <tr key={item.nid}>
-                            <td className="p-3 whitespace-wrap">
-                              <Link 
-                                to={`/bunk/${item.bunk}`}
-                                state={{ selectedDate: item.date }}
-                                >
-                                <div className="text-center text-sm text-black-200">{item.date}</div>
-                              </Link>
-                            </td>
-                            <td className={`p-1 whitespace-wrap bg-${item.social_score}`}>
-                                <div className="text-center text-sm text-black-200">{item.social_score}</div>
-                            </td>
-                            <td className={`p-1 whitespace-wrap bg-${item.behavior_score}`}>
-                                <div className="text-center text-sm text-black-200">{item.behavior_score}</div>
-                            </td>
-                            <td className={`p-1 whitespace-wrap bg-${item.participation_score}`}>
-                                <div className="text-center text-sm text-black-200">{item.participation_score}</div>
-                            </td>
-                            <td className="p-3 whitespace-wrap">
-                                <div className="text-left text-sm text-black-200" dangerouslySetInnerHTML={{ __html: item.description }} />
-                            </td>
-                            <td className="p-1 whitespace-nowrap">
-                                <div className="text-center text-sm text-green-500">{item.request_camper_care_help}</div>
-                            </td>
-                            <td className="p-1 whitespace-nowrap">
-                                <div className="text-center text-sm text-green-500">{item.request_unit_head_help}</div>
-                            </td>
-                            <td className="p-2 whitespace-nowrap">
-                                <div className="text-sm text-center">{item.reporting_counselor}</div>
-                            </td>
-                            <td className="p-2 whitespace-nowrap">
-                                <div className="text-sm text-center">This are some notes here </div>
-                            </td>
+                <table>
+                <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs">
+                        <tr>
+                            {/* Column width: 2/12 */}
+                            <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
+                                <div className="font-semibold text-left">Date</div>
+                            </th>
+                            <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
+                                <div className="font-semibold text-left">Social Score</div>
+                            </th>
+                            <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
+                                <div className="font-semibold text-left">Behavior Score</div>
+                            </th>
+                            <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
+                                <div className="font-semibold text-left">Participation Score</div>
+                            </th>
+                            <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
+                                <div className="font-semibold text-left">Camper Care Help</div>
+                            </th>
+                            <th className="w-2/12 p-2 border-b border-gray-200 dark:border-gray-700">
+                                <div className="font-semibold text-left">Unit Head Help</div>
+                            </th>
                         </tr>
-                    ))}
-                    </tbody>
+                    </thead>
+                        {bunk_logs.map((item) => (
+                    <CamperLogsCamperViewItem 
+                        key={item.id}
+                        id={item.id}
+                        bunk_assignment={item.bunk_assignment}
+                        date={item.date}
+                        social_score={item.social_score}
+                        behavior_score={item.behavior_score}
+                        participation_score={item.participation_score}
+                        request_camper_care_help={item.request_camper_care_help}
+                        request_unit_head_help={item.request_unit_head_help}
+                        description={item.description}
+                    />
+                        ))}
                 </table>
-
-                </div>
-
             </div>
-            </div>
-
+        </div>
+    </div>
       );
 }
 

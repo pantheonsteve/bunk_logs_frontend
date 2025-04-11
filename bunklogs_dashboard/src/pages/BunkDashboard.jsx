@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-import Sidebar from '../partials/Sidebar';
+import BunkPageSidebar from '../partials/BunkPageSidebar';
 import Header from '../partials/Header';
 import FilterButton from '../components/DropdownFilter';
 import SingleDatePicker from '../components/SingleDatepicker';
@@ -29,18 +29,42 @@ function BunkDashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(
-    location.state?.selectedDate ? new Date(location.state.selectedDate) : new Date()
-  );
+  
+  // Ensure proper date handling with timezone consistency
+  const [selectedDate, setSelectedDate] = useState(() => {
+    if (location.state?.selectedDate) {
+      // Parse the date string directly without timezone conversion
+      const dateStr = location.state.selectedDate;
+      const [year, month, day] = dateStr.split('-').map(Number);
+      
+      // Create date in local timezone to avoid date shifting
+      // By using new Date(year, month-1, day) we ensure the date is created
+      // in the local timezone without any UTC conversion
+      return new Date(year, month - 1, day);
+    }
+    return new Date();
+  });
+
+  // Log the date for debugging
+  useEffect(() => {
+    console.log('Selected Date State:', selectedDate);
+    console.log('Selected Date Formatted:', 
+      `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`);
+  }, [selectedDate]);
 
   const handleDateChange = React.useCallback((newDate) => {
     // Ensure a clean, new date object is set
-    // to avoid React state updates causing unnecessary re-renders
-    if (!new Date(newDate).getTime()) return;
+    if (!newDate || !new Date(newDate).getTime()) return;
 
+    // Create a new date object at midnight in local timezone
+    const year = newDate.getFullYear();
+    const month = newDate.getMonth();
+    const day = newDate.getDate();
+    const standardizedDate = new Date(year, month, day);
+    
     // Update the selected date state
-    setSelectedDate(new Date(newDate));
-    console.log('New date selected:', newDate);
+    setSelectedDate(standardizedDate);
+    console.log('New date selected:', standardizedDate);
   }, []);
 
   const handleOpenBunkLogModal = (camperId, camper_bunk_assignment_id) => {
@@ -53,13 +77,17 @@ function BunkDashboard() {
     async function fetchData() {
       try {
         setLoading(true);
-        const formattedDate = selectedDate.toISOString().split('T')[0];
+        // Format date consistently for API request
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
         
         const response = await axios.get(
           `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${formattedDate}`
         );
          
-        setData(response.data); // Debug
+        setData(response.data);
       } catch (error) {
         console.error('Error:', error);
         setError(error);
@@ -86,8 +114,8 @@ function BunkDashboard() {
   return (
     <div className="flex h-screen overflow-hidden">
 
-      {/* Sidebar */}
-      <Sidebar 
+      {/* BunkPageSidebar */}
+      <BunkPageSidebar 
         sidebarOpen={sidebarOpen} 
         setSidebarOpen={setSidebarOpen} 
         date={selected_date} 

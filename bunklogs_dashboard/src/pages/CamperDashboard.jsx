@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-import Sidebar from '../partials/Sidebar';
+import CamperPageSidebar from '../partials/CamperPageSidebar';
 import Header from '../partials/Header';
 import FilterButton from '../components/DropdownFilter';
 import SingleDatePicker from '../components/SingleDatepicker';
@@ -10,7 +10,6 @@ import BunkLogsCamperViewCard from '../partials/dashboard/BunkLogsCamperViewCard
 import CamperTitleCard from '../partials/dashboard/CamperTitleCard';
 import DashboardCard08 from '../partials/dashboard/DashboardCard08';
 
-import Banner from '../partials/Banner';
 import ScoresLineChartCard from '../partials/dashboard/ScoresLineChartCard';
 
 function CamperDashboard() {
@@ -25,18 +24,30 @@ function CamperDashboard() {
     async function fetchData() {
       try {
         setLoading(true);
-        console.log('Camper ID:', camper_id); // formattedDate is in the correct format "YYYY-MM-DD"
+        console.log('Attempting API call for camper_id:', camper_id);
         
-        //console.log('Fetching data for:', formattedDate); // Debug
+        // Check if camper_id is valid
+        if (!camper_id) {
+          console.error('Invalid camper_id:', camper_id);
+          setError('Invalid camper ID');
+          return;
+        }
         
-        const response = await axios.get(
-          `http://127.0.0.1:8000//api/v1/camper/${camper_id}`
-        );
+        const url = `http://127.0.0.1:8000/api/v1/camper/${camper_id}/`;
+        console.log('API URL:', url);
         
-        console.log('Response:', response.data); // Debug
-        setData(response.data);
+        const response = await axios.get(url);
+        console.log('API Response Status:', response.status);
+        console.log('API Response Data:', response.data);
+        
+        setData(response.data || {});
       } catch (error) {
-        console.error('Error:', error);
+        console.error('API Call Error:', error);
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
         setError(error);
       } finally {
         setLoading(false);
@@ -47,12 +58,25 @@ function CamperDashboard() {
   }, [camper_id]);
 
   console.log('Camper Data:', data); // Debug
+  
+  // Process data only if it's available
+  const bunkAssignments = data?.bunk_assignments || [];
+  console.log('Bunk Assignments:', bunkAssignments); // Debug
+  const activeBunkAssignments = bunkAssignments.filter(assignment => assignment.is_active);
+  // Get the active bunk ID for back linking
+  const activeBunkId = activeBunkAssignments.length > 0 ? activeBunkAssignments[0].bunk_id : null;
+
+  console.log('Active Bunk ID:', activeBunkId); // Debug
 
   return (
     <div className="flex h-screen overflow-hidden">
 
       {/* Sidebar */}
-      <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <CamperPageSidebar 
+        sidebarOpen={sidebarOpen} 
+        setSidebarOpen={setSidebarOpen} 
+        bunk={activeBunkId} 
+      />
 
       {/* Content area */}
       <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -68,7 +92,15 @@ function CamperDashboard() {
 
               {/* Left: Title */}
               <div className="mb-4 sm:mb-0">
-                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">{data?.camper?.first_name} {data?.camper?.last_name}</h1>
+                {loading ? (
+                  <div className="animate-pulse h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                ) : error ? (
+                  <h1 className="text-2xl md:text-3xl text-red-600 font-bold">Error Loading Camper</h1>
+                ) : (
+                  <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+                    {data?.camper?.first_name} {data?.camper?.last_name}
+                  </h1>
+                )}
               </div>
 
               {/* Right: Actions */}
@@ -77,11 +109,31 @@ function CamperDashboard() {
 
             </div>
 
-            {/* Cards */}
-            <div className="grid grid-cols-12 gap-6">
-              <ScoresLineChartCard camperData={data} />
-              <BunkLogsCamperViewCard camperData = {data}/>
-            </div>
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                  <p className="mt-2 text-gray-600 dark:text-gray-400">Loading camper data...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Error State */}
+            {!loading && error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong className="font-bold">Error!</strong>
+                <span className="block sm:inline"> {error.message || 'Failed to load camper data'}</span>
+              </div>
+            )}
+
+            {/* Cards - only render when data is loaded and no errors */}
+            {!loading && !error && (
+              <div className="grid grid-cols-12 gap-6">
+                <ScoresLineChartCard camperData={data.bunk_logs} />
+                <BunkLogsCamperViewCard camperData={data} />
+              </div>
+            )}
 
           </div>
         </main>

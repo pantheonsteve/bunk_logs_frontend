@@ -1,6 +1,26 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
-function AccordionTableCamperItem(props) {
+function CamperLogsCamperViewItem(props) {
+
+  //console.log('props:', props); // Debug
+
+  const getBunkIdForBunkLog = (bunk_log) => {
+      // Check if bunk_log is an object and has the 'bunk' property
+      console.log('IN FUNCTION', bunk_log);
+      if ((typeof bunk_log === 'object') && (bunk_log !== null) && ('bunk_assignment' in bunk_log)) {
+          // Check if 'bunk' is an object and has the 'id' property
+          if ((typeof bunk_log.bunk_assignment === 'object') && (bunk_log.bunk_assignment !== null) && ('id' in bunk_log.bunk_assignment)) {
+              const bunk_assignment = bunk_log.bunk_assignment;
+              if (bunk_assignment && bunk_assignment.bunk_id) {
+                  return bunk_assignment.bunk_id;
+              }
+          }}
+      // Return null if the bunk ID is not found
+      return null;
+  }
+
+  //console.log('Bunk ID:', getBunkIdForBunkLog(props)); // Debug
 
     // Score background color mapping
   const getScoreBackgroundColor = (score) => {
@@ -28,22 +48,22 @@ function AccordionTableCamperItem(props) {
     }
   };
 
+  //console.log(props); // Debug
+
   const [open, setOpen] = useState(false);
 
   return (
-    <tbody className="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60">
+    <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
       <tr>
-        <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div className="flex items-center text-gray-800">
-            <div className="w-10 h-10 shrink-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-full mr-2 sm:mr-3">
-              <img className="rounded-full ml-1" src={props.image} width="40" height="40" alt={props.customer} />
-            </div>
-            <div className="font-medium text-gray-800 dark:text-gray-100">{props.camper_first_name} {props.camper_last_name}</div>
-          </div>
-        </td>
-        <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div className="text-center">{props.date}</div>
-        </td>
+        <Link 
+          className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" 
+          to={`/bunk/${props.bunk_assignment.bunk.id}`}
+          state={{ selectedDate: props.date }}
+        >
+          <td className="p-3 whitespace-wrap">
+            <div className="text-center">{props.date}</div>
+          </td>
+        </Link>
         <td className={`px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap ${getScoreBackgroundColor(props.social_score)}`}>
           <div className="text-center">{props.social_score}</div>
         </td>
@@ -54,10 +74,10 @@ function AccordionTableCamperItem(props) {
           <div className="text-center">{props.participation_score}</div>
         </td>
         <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div className="text-center">{getHelpRequestedIcon(props.camper_care_help)}</div>
+          <div className="text-center">{getHelpRequestedIcon(props.request_camper_care_help)}</div>
         </td>
         <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div className="text-center">{getHelpRequestedIcon(props.unit_head_help)}</div>
+          <div className="text-center">{getHelpRequestedIcon(props.request_unit_head_help)}</div>
         </td>
         <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
           <div className="flex items-center">
@@ -85,7 +105,7 @@ function AccordionTableCamperItem(props) {
           <div className="bg-gray-50 dark:bg-gray-950/[0.15] dark:text-gray-400 p-3 -mt-3">
             <div className="text-sm mb-3">
               {/* Note: Using dangerouslySetInnerHTML requires that content is properly sanitized to prevent XSS attacks */}
-              <div dangerouslySetInnerHTML={{ __html: props.descriptionBody }}></div>
+              <div dangerouslySetInnerHTML={{ __html: props.description }}></div>
               <div className="font-medium text-gray-800 dark:text-gray-100 mb-1">Reporting Counselor: {props.counselor_name}</div>
             </div>
           </div>
@@ -95,4 +115,4 @@ function AccordionTableCamperItem(props) {
   );
 }
 
-export default AccordionTableCamperItem;
+export default CamperLogsCamperViewItem;
