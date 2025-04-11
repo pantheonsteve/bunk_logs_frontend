@@ -7,10 +7,6 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
-
-  console.log('bunk_id baby:', bunk_id);
-  console.log('camper_id baby:', camper_id);
-  console.log('date baby', date);
   
   // Use props or fallback to params
   const bunkIdToUse = bunk_id || params.bunk_id; //WORKING
@@ -20,10 +16,6 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
     : new Date().toISOString().split('T')[0]); //WORKING
   const Data = data || null;
   const bunk_assignment = Data?.campers?.find(c => c.camper_id == camperIdToUse)?.bunk_assignment?.id || null;
-
-  console.log('bunk_assignment', bunk_assignment);
-  console.log('dateToUse:', dateToUse); //WORKING
-  console.log('DATA:', Data);
   
   // For Quill editor
   const editorRef = useRef(null);
@@ -32,10 +24,6 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   // State for camper data
   const [camperData, setCamperData] = useState(null);
 
-  console.log('camperIdToUse:', camperIdToUse);
-  console.log('bunkIdToUse:', bunkIdToUse);
-
-  
   // Form state
   const [formData, setFormData] = useState({
     bunk_id: bunkIdToUse, //WORKING
@@ -70,8 +58,6 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   // Get counselors for the dropdown
   const [counselors, setCounselors] = useState([]);
 
-  console.log('Camper Data:', camperData);
-  
   // Fetch camper data when camper_id changes
   useEffect(() => {
     async function fetchCamperData() {
@@ -91,12 +77,6 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
     fetchCamperData();
   }, [camperIdToUse]);
 
-  console.log('Form Data:', formData);
-  console.log('Bunk ID:', bunkIdToUse); //WORKING
-  console.log('Camper ID:', camperIdToUse);
-  console.log('Date:', dateToUse); //WORKING
-  console.log('CamperData:', camperData);
-  
   // Initialize Quill editor
   useEffect(() => {
     if (editorRef.current && !quillRef.current) {
@@ -130,9 +110,7 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   }, [formData.not_on_camp]);
   
   // Fetch counselors
-  console.log(camperData);
   useEffect(() => {
-    // In a real app, you would fetch this from API or use context
     const counselors = camperData?.bunk?.counselors || [];
     setCounselors(
       counselors.map(counselor => ({
@@ -195,8 +173,7 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
           }
         }
       );
-      
-      console.log('API Response:', response);
+
       
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
@@ -235,14 +212,10 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
       setLoading(false);
     }
   };
-  
-  console.log('CAMPER DATA:', camperData);
-  console.log(camperIdToUse);
-  console.log('CAMPER DATA type:', typeof camperData, camperData);
 
   const campers = camperData?.campers || [];
   const selectedCamper = campers.find(c => c.camper_id == camperIdToUse);
-  console.log('Selected Camper:', selectedCamper);
+  
   // Get camper name
   const camperName = selectedCamper
     ? `${selectedCamper.camper_first_name} ${selectedCamper.camper_last_name}`

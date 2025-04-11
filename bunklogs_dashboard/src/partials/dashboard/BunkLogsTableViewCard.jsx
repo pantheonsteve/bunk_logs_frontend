@@ -44,9 +44,6 @@ function BunkLogsTableViewCard({ bunkData }) {
     }
   }, [bunkData]);
 
-  console.log("Bunk Data", bunkData); // Debug
-  console.log("Bunk Data - Campers", bunkData?.campers); // Debug
-
   // Get the Counselor Name from the ID
   const getCounselorName = (counselorId, data) => {
     // First check in bunk.counselors (primary location in your data)
@@ -58,8 +55,6 @@ function BunkLogsTableViewCard({ bunkData }) {
     }
     return "Unknown";
   }
-
-  console.log("Counselor Name", getCounselorName("1", data)); // Debug
 
   // Score background color mapping
   const getScoreBackgroundColor = (score) => {

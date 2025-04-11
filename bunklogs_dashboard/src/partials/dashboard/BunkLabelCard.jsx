@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function BunkLabelCard({ bunkLabel }) {
-  console.log('BunkLabelCard:', bunkLabel);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // Changed to false since data is passed as prop
 

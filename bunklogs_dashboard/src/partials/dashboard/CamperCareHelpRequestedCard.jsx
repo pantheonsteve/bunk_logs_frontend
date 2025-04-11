@@ -44,7 +44,6 @@ function CamperCareHelpRequestedCard({ bunkData }) {
               {/* Row */}
               {Array.isArray(data) ? (
                 data.map((item) => {
-                  console.log('Current item:', item);
                   return (
                   <tr key={item.id}>
                       <td className="p-2">

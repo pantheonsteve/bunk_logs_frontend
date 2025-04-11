@@ -45,13 +45,6 @@ function BunkDashboard() {
     return new Date();
   });
 
-  // Log the date for debugging
-  useEffect(() => {
-    console.log('Selected Date State:', selectedDate);
-    console.log('Selected Date Formatted:', 
-      `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`);
-  }, [selectedDate]);
-
   const handleDateChange = React.useCallback((newDate) => {
     // Ensure a clean, new date object is set
     if (!newDate || !new Date(newDate).getTime()) return;
@@ -183,9 +176,6 @@ function BunkDashboard() {
                 </div>
               </div>
             </div>
-
-            {console.log("my data", data)} {/* Debug */}
-            {console.log('date', selected_date)} {/* Debug */}
 
             {/* Cards */}
             <div className="grid grid-cols-12 gap-6">

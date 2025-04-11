@@ -18,9 +18,6 @@ function CamperList({ bunk_id, date, openBunkModal, refreshTrigger }) {
               `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${date}`
             );
             setData(response.data.campers);
-            console.log('Bunk ID:', bunk_id); // Debug
-            console.log('Formatted Date:', date); // Debug
-            console.log('Response:', response.data.campers); // Debug
           } catch (error) {
             setError('Error fetching campers.');
           } finally {

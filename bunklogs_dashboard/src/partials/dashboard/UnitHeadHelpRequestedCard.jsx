@@ -9,8 +9,6 @@ function UnitHeadHelpRequestedCard({ bunkData }) {
     const [loading, setLoading] = useState(false);  // Changed to false since data is passed as prop
     const [data, setData] = useState(bunkData);
 
-    console.log('BunkData:', bunkData); // Debug
-
     const filterUnitHeadHelp = (campers) => {
         return campers.filter((camper) => camper.bunk_log?.request_unit_head_help == true);
     }
@@ -46,7 +44,6 @@ function UnitHeadHelpRequestedCard({ bunkData }) {
               {/* Row */}
               {Array.isArray(data) ? (
                 data.map((item) => {
-                  console.log('Current item:', item);
                   return (
                   <tr key={item.id}>
                       <td className="p-2">
