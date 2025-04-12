@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Transition from '../../utils/Transition';
 
 function BunkLogFormModal({
@@ -6,10 +6,35 @@ function BunkLogFormModal({
   id,
   title,
   modalOpen,
-  setModalOpen
+  setModalOpen,
+  formSubmitted = false  // New prop to track form submission status
 }) {
-
   const modalContent = useRef(null);
+  const [wasOpen, setWasOpen] = useState(false);
+  const [shouldRefresh, setShouldRefresh] = useState(false);
+
+  // Track modal open state changes
+  useEffect(() => {
+    // If the modal was open and is now closing
+    if (wasOpen && !modalOpen) {
+      if (formSubmitted) {
+        setShouldRefresh(true);
+      }
+    }
+    setWasOpen(modalOpen);
+  }, [modalOpen, formSubmitted]);
+
+  // Handle the refresh in a separate effect to ensure state updates complete first
+  useEffect(() => {
+    if (shouldRefresh) {
+      console.log('Refreshing page after form submission...');
+      // Use a more reliable timeout to ensure modal animation completes
+      setTimeout(() => {
+        window.location.reload();
+      }, 500); 
+      setShouldRefresh(false);
+    }
+  }, [shouldRefresh]);
 
   // close on click outside
   useEffect(() => {

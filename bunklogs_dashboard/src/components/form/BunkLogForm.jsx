@@ -178,12 +178,17 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
         
-        // Close the modal and trigger data refresh instead of redirecting
+        // Close the modal and trigger data refresh
         setTimeout(() => {
           if (onClose) {
-            onClose();
-            // Refresh the page data by making a new API call
-            // This will be handled by the parent component via the onClose callback
+            // IMPORTANT: Pass true to onClose to indicate successful form submission
+            onClose(true); // This will inform the parent component that the form was submitted
+            
+            // Force page refresh if needed - backup approach
+            if (window.location.reload) {
+              console.log("Forcing page refresh");
+              setTimeout(() => window.location.reload(), 100);
+            }
           } else {
             // Fallback to original redirect behavior if no onClose provided
             navigate(`/bunk/${bunkIdToUse}`, { 

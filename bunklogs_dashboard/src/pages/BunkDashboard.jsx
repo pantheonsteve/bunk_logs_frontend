@@ -29,6 +29,8 @@ function BunkDashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   
   // Ensure proper date handling with timezone consistency
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -65,6 +67,13 @@ function BunkDashboard() {
     setBunkAssignmentId(camper_bunk_assignment_id);
     setBunkLogFormModalOpen(true);
   };
+  
+  const handleModalClose = (wasSubmitted) => {
+    if(wasSubmitted) {
+      setFormSubmitted(true);
+    }
+    setBunkLogFormModalOpen(false);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -91,13 +100,6 @@ function BunkDashboard() {
     
     fetchData();
   }, [bunk_id, selectedDate]);
-
-  const handleFormClose = () => {
-    setBunkLogFormModalOpen(false);
-    setSelectedCamperId(null);
-    setBunkAssignmentId(null);
-    fetchData();
-  }
 
   const cabin_name = data?.bunk?.cabin?.name || "Bunk X"; // Default if cabin_name is not available
   const session_name = data?.bunk?.session?.name || "Session X"; // Default if session_name is not available
@@ -179,19 +181,20 @@ function BunkDashboard() {
 
             {/* Cards */}
             <div className="grid grid-cols-12 gap-6">
-            <BunkLogFormModal 
-              id="bunklogform-modal" 
-              modalOpen={bunkLogModalOpen} 
-              setModalOpen={setBunkLogFormModalOpen} 
-              title="Create Bunk Log"
-            >
-              <BunkLogForm 
-                bunk_id={bunk_id}
-                camper_id={selectedCamperId}
-                date={selected_date}
-                data={data}
-                onClose={handleFormClose}
-              />
+              <BunkLogFormModal 
+                id="bunk-log-form"
+                title="Add Bunk Log"
+                modalOpen={bunkLogModalOpen}
+                setModalOpen={setBunkLogFormModalOpen}
+                formSubmitted={formSubmitted}
+              >
+                <BunkLogForm 
+                  bunk_id={bunk_id}
+                  camper_id={selectedCamperId}
+                  date={selected_date}
+                  data={data}
+                  onClose={handleModalClose}
+                />
               </BunkLogFormModal>
               <NotOnCampCard bunkData={data} />
               <UnitHeadHelpRequestedCard bunkData={data} />
