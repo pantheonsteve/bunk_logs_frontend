@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 
-import CamperPageSidebar from '../partials/CamperPageSidebar';
+import CamperPageSidebar from '../partials/camper-dashboard/CamperPageSidebar';
 import Header from '../partials/Header';
 import FilterButton from '../components/DropdownFilter';
 import SingleDatePicker from '../components/SingleDatepicker';
 import BunkLogsCamperViewCard from '../partials/dashboard/BunkLogsCamperViewCard';
 import CamperTitleCard from '../partials/dashboard/CamperTitleCard';
 import DashboardCard08 from '../partials/dashboard/DashboardCard08';
-
+import ScoresBarChartCard from '../partials/dashboard/ScoresBarChartCard';
+import BarChart03 from '../charts/BarChart03';
 import ScoresLineChartCard from '../partials/dashboard/ScoresLineChartCard';
+import DashboardCard04 from '../partials/dashboard/DashboardCard04';
 
 function CamperDashboard() {
 
@@ -65,6 +67,7 @@ function CamperDashboard() {
   const activeBunkAssignments = bunkAssignments.filter(assignment => assignment.is_active);
   // Get the active bunk ID for back linking
   const activeBunkId = activeBunkAssignments.length > 0 ? activeBunkAssignments[0].bunk_id : null;
+  const activeBunkName = activeBunkAssignments.length > 0 ? activeBunkAssignments[0].bunk_name : null;
 
   console.log('Active Bunk ID:', activeBunkId); // Debug
 
@@ -75,7 +78,8 @@ function CamperDashboard() {
       <CamperPageSidebar 
         sidebarOpen={sidebarOpen} 
         setSidebarOpen={setSidebarOpen} 
-        bunk={activeBunkId} 
+        bunk_id={activeBunkId}
+        bunk_name = {activeBunkName}
       />
 
       {/* Content area */}
@@ -130,6 +134,7 @@ function CamperDashboard() {
             {/* Cards - only render when data is loaded and no errors */}
             {!loading && !error && (
               <div className="grid grid-cols-12 gap-6">
+                <ScoresBarChartCard camperData={data.bunk_logs} />
                 <ScoresLineChartCard camperData={data.bunk_logs} />
                 <BunkLogsCamperViewCard camperData={data} />
               </div>

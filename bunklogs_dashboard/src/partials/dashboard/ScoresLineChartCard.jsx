@@ -31,7 +31,7 @@ function ScoresLineChartCard({ camperData }) {
     participation: {
       label: 'Participation',
       color: '#9CA3AF'  // Light gray
-    }
+   /* */}
   };
 
   const formatDate = (dateStr) => {
@@ -46,7 +46,13 @@ function ScoresLineChartCard({ camperData }) {
     }
 
     try {
+      // Calculate date 60 days ago
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      
       const processedData = [...camperData]
+        // Filter data to only include entries from the past 60 days
+        .filter(entry => new Date(entry.date) >= sixtyDaysAgo)
         .sort((a, b) => new Date(a.date) - new Date(b.date))
         .map(entry => ({
           date: formatDate(entry.date),
@@ -54,7 +60,7 @@ function ScoresLineChartCard({ camperData }) {
           behavior: parseInt(entry.behavior_score),
           participation: parseInt(entry.participation_score)
         }));
-
+ 
       console.log('Processed Data:', processedData); // Debug
 
       const createDataset = (key, label, color) => ({
@@ -80,7 +86,7 @@ function ScoresLineChartCard({ camperData }) {
         pointBorderWidth: 2,
         pointHoverBorderWidth: 2,
         clip: 20,
-        tension: 0.4,
+        tension: 0.0,
         spanGaps: true
       });
 

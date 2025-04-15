@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { BunkProvider } from './context/BunkContext';
 import {
   Routes,
   Route,
@@ -26,13 +27,13 @@ function App() {
   }, [location.pathname]); // triggered on route change
 
   return (
-    <>
+    <BunkProvider>
       <Routes>
-        <Route exact path="/bunk/:bunk_id" element={<BunkDashboard />} />
+        <Route exact path="/bunk/:bunk_id/:date" element={<BunkDashboard />} />
         <Route exact path="/camper/:camper_id" element={<CamperDashboard />} />
         <Route exact path="/" element={<Dashboard />} />
       </Routes>
-    </>
+    </BunkProvider>
   );
 }
 

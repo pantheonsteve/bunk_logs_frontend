@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useBunk } from '../context/BunkContext';
+import { saveSelectedDate, getSelectedDate } from '../utils/stateUtils';
 
-import BunkPageSidebar from '../partials/BunkPageSidebar';
+import BunkPageSidebar from '../partials/bunk-dashboard/BunkPageSidebar';
 import Header from '../partials/Header';
 import FilterButton from '../components/DropdownFilter';
 import SingleDatePicker from '../components/SingleDatepicker';
@@ -10,7 +12,6 @@ import NotOnCampCard from '../partials/dashboard/NotOnCampCard';
 import CamperCareHelpRequestedCard from '../partials/dashboard/CamperCareHelpRequestedCard';
 import UnitHeadHelpRequestedCard from '../partials/dashboard/UnitHeadHelpRequestedCard';
 import BunkLogsTableViewCard from '../partials/dashboard/BunkLogsTableViewCard';
-import { useLocation } from 'react-router-dom';
 import BunkChartTitleCard from '../partials/dashboard/BunkChartTitleCard';
 import Banner from '../partials/Banner';
 import CategoryScoreCard from '../partials/dashboard/CategoryScoreCard';
@@ -20,56 +21,87 @@ import Wysiwyg from '../components/form/Wysiwyg';
 import BunkLogFormModal from '../components/modals/BunkLogFormModal';
 
 function BunkDashboard() {
+  console.log('[BunkDashboard] Component initializing');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bunkLogModalOpen, setBunkLogFormModalOpen] = useState(false);
   const [selectedCamperId, setSelectedCamperId] = useState(null);
-  const [selectedBunkAssignmentID, setBunkAssignmentId] = useState(null);
-  const { bunk_id } = useParams();
+  const [camperBunkAssignmentId, setCamperBunkAssignmentId] = useState(null);
+  const { bunk_id, date } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+
+  const { bunkData, setBunkData } = useBunk();
   
   // Ensure proper date handling with timezone consistency
   const [selectedDate, setSelectedDate] = useState(() => {
-    if (location.state?.selectedDate) {
-      // Parse the date string directly without timezone conversion
+    if (date) {
+      // Prioritize date from URL parameter
+      const [year, month, day] = date.split('-').map(Number);
+      console.log(`[BunkDashboard] Initializing with date from URL parameter: ${date}`);
+      return new Date(year, month - 1, day);
+    } else if (location.state?.selectedDate) {
       const dateStr = location.state.selectedDate;
       const [year, month, day] = dateStr.split('-').map(Number);
-      
-      // Create date in local timezone to avoid date shifting
-      // By using new Date(year, month-1, day) we ensure the date is created
-      // in the local timezone without any UTC conversion
+      console.log(`[BunkDashboard] Initializing with date from location state: ${dateStr}`);
       return new Date(year, month - 1, day);
+    } else {
+      const storedDate = getSelectedDate();
+      console.log(`[BunkDashboard] Using stored date: ${storedDate || 'none, defaulting to today'}`);
+      return storedDate || new Date();
     }
-    return new Date();
   });
+
+  // Keep selectedDate in sync with URL parameter
+  useEffect(() => {
+    if (date) {
+      const [year, month, day] = date.split('-').map(Number);
+      const dateFromUrl = new Date(year, month - 1, day);
+      console.log(`[BunkDashboard] Updating selectedDate from URL: ${date}`);
+      setSelectedDate(dateFromUrl);
+    }
+  }, [date]);
 
   const handleDateChange = React.useCallback((newDate) => {
     // Ensure a clean, new date object is set
-    if (!newDate || !new Date(newDate).getTime()) return;
+    if (!newDate || !new Date(newDate).getTime()) {
+      console.log('[BunkDashboard] Invalid date provided to handleDateChange');
+      return;
+    }
 
     // Create a new date object at midnight in local timezone
     const year = newDate.getFullYear();
     const month = newDate.getMonth();
     const day = newDate.getDate();
     const standardizedDate = new Date(year, month, day);
+
+    console.log(`[BunkDashboard] Date changed: ${standardizedDate.toISOString()} (local: ${standardizedDate.toString()})`);
+    
+    // Format date for URL: YYYY-MM-DD
+    const formattedDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    
+    // Navigate to new URL with selected date
+    navigate(`/bunk/${bunk_id}/${formattedDate}`);
     
     // Update the selected date state
     setSelectedDate(standardizedDate);
-    console.log('New date selected:', standardizedDate);
-  }, []);
+  }, [bunk_id, navigate]);
 
   const handleOpenBunkLogModal = (camperId, camper_bunk_assignment_id) => {
+    console.log(`[BunkDashboard] Opening bunk log modal for camper: ${camperId}, assignment: ${camper_bunk_assignment_id}`);
     setSelectedCamperId(camperId);
-    setBunkAssignmentId(camper_bunk_assignment_id);
+    setCamperBunkAssignmentId(camper_bunk_assignment_id);
     setBunkLogFormModalOpen(true);
   };
   
   const handleModalClose = (wasSubmitted) => {
+    console.log(`[BunkDashboard] Closing modal, submission status: ${wasSubmitted}`);
     if(wasSubmitted) {
+      saveSelectedDate(selectedDate);
       setFormSubmitted(true);
     }
     setBunkLogFormModalOpen(false);
@@ -77,6 +109,7 @@ function BunkDashboard() {
 
   useEffect(() => {
     async function fetchData() {
+      console.log(`[BunkDashboard] Starting data fetch for bunk_id: ${bunk_id}`);
       try {
         setLoading(true);
         // Format date consistently for API request
@@ -85,15 +118,19 @@ function BunkDashboard() {
         const day = String(selectedDate.getDate()).padStart(2, '0');
         const formattedDate = `${year}-${month}-${day}`;
         
+        console.log(`[BunkDashboard] Fetching data for date: ${date}`);
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${formattedDate}`
+          `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${date}`
         );
          
+        console.log(`[BunkDashboard] Data fetched successfully. Campers: ${response.data?.campers?.length || 0}`);
         setData(response.data);
+        setBunkData(response.data);
       } catch (error) {
-        console.error('Error:', error);
+        console.error(`[BunkDashboard] API Error:`, error);
         setError(error);
       } finally {
+        console.log('[BunkDashboard] Data fetch completed');
         setLoading(false);
       }
     }
@@ -105,6 +142,8 @@ function BunkDashboard() {
   const session_name = data?.bunk?.session?.name || "Session X"; // Default if session_name is not available
   const bunk_label = `${cabin_name} - ${session_name}`; 
   const selected_date = data?.date || "2025-01-01"; // Format date as YYYY-MM-DD
+  
+  console.log(`[BunkDashboard] Rendering with bunk label: "${bunk_label}", date: ${selected_date}`);
   
   return (
     <div className="flex h-screen overflow-hidden">
@@ -157,25 +196,6 @@ function BunkDashboard() {
                 </div>
                 
                 {/* Column C: Action Buttons that become full width on small screens */}
-                <div className="p-4">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    {/* Button 1 (6/12 width on larger screens, full width on small) */}
-                    <button className="w-full sm:w-6/12 btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white rounded-full">
-                      <svg className="fill-current shrink-0 xs:hidden mr-2" width="16" height="16" viewBox="0 0 16 16">
-                        <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-                      </svg>
-                      <span>Maintenance Request</span>
-                    </button>
-                    
-                    {/* Button 2 (6/12 width on larger screens, full width on small) */}
-                    <button className="w-full sm:w-6/12 btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white rounded-full">
-                      <svg className="fill-current shrink-0 xs:hidden mr-2" width="16" height="16" viewBox="0 0 16 16">
-                        <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-                      </svg>
-                      <span>Camper Care Items</span>
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
 

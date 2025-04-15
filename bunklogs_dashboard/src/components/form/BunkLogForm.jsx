@@ -24,6 +24,8 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   // State for camper data
   const [camperData, setCamperData] = useState(null);
 
+
+
   // Form state
   const [formData, setFormData] = useState({
     bunk_id: bunkIdToUse, //WORKING
@@ -39,16 +41,41 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
     social_score: 3,
     description: '',
   });
+
   
   // Update form data when camperIdToUse changes
   useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      camper_id: camperIdToUse,
-      bunk_assignment: bunk_assignment, 
-      date: dateToUse,
-    }));
+    console.log('CamperIdToUse:', camperIdToUse); // Debug
+    try {
+      // Look for existing bunklog data based on camperIdToUse, bunkIdToUse, and date
+      const existingData = data?.campers?.find(item => 
+        item.camper_id === camperIdToUse
+      );
+      if (existingData) {
+        console.log('camper:', existingData); // Debug
+        if (existingData.bunk_log) {
+          console.log('bunk_log_data:', existingData.bunk_log); // Debug
+        }
+        setFormData(prev => ({
+          ...prev,
+          ...existingData.bunk_log,
+          bunk_assignment: existingData.bunk_assignment.id,
+          date: dateToUse,
+          description: existingData?.bunk_log?.description || '',
+        }));
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          bunk_assignment: bunk_assignment,
+          date: dateToUse,
+        }));
+      }
+    }
+    catch (error) {
+      console.error('Error setting form data:', error);
+    }
   }, [camperIdToUse]);
+
   
   // Loading state
   const [loading, setLoading] = useState(false);
@@ -76,6 +103,7 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
     
     fetchCamperData();
   }, [camperIdToUse]);
+
 
   // Initialize Quill editor
   useEffect(() => {
@@ -178,24 +206,28 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
         
+        // Convert dateToUse to proper format if needed
+        const formattedDate = dateToUse;
+        
         // Close the modal and trigger data refresh
         setTimeout(() => {
           if (onClose) {
             // IMPORTANT: Pass true to onClose to indicate successful form submission
             onClose(true); // This will inform the parent component that the form was submitted
             
-            // Force page refresh if needed - backup approach
-            if (window.location.reload) {
-              console.log("Forcing page refresh");
-              setTimeout(() => window.location.reload(), 100);
-            }
+            // Instead of forcing a page refresh, try to update the parent's date state
+            // This should be handled by the parent component via the onClose callback
           } else {
-            // Fallback to original redirect behavior if no onClose provided
+            // When redirecting, ensure we're explicitly passing the correct date format
+            console.log("Redirecting to bunk page with date:", formattedDate);
+            
+            // Use replace: true to avoid issues with history stack
             navigate(`/bunk/${bunkIdToUse}`, { 
-              state: { selectedDate: new Date(dateToUse) }
+              state: { date: formattedDate },
+              replace: true
             });
           }
-        }, 1500);
+        }, 100); // Reduced timeout for better UX
       } else {
         setError(`Unexpected response: ${response.status}`);
       }
@@ -261,7 +293,7 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
             </label>
             <input 
               type="date" 
-              value={date ? dateToUse : ''} 
+              value={dateToUse || ''} 
               readOnly 
               className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 cursor-not-allowed"
             />

@@ -1,8 +1,5 @@
-"use client"
-
 import * as React from "react"
 import { format } from "date-fns"
-
 import { cn } from "../lib/utils"
 import { Calendar } from "./ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
@@ -42,9 +39,14 @@ export default function SingleDatePicker({ className, date, setDate }) {
               if (selectedDate) {
                 // Ensure new selections are also set to noon
                 const newDate = new Date(selectedDate);
+                console.log('New Date', JSON.stringify(newDate));
                 newDate.setHours(12, 0, 0, 0);
+                // Save in local storage first
+                localStorage.setItem('selectedDate', JSON.stringify(newDate));
+                // Then set the date
                 setDate(newDate);
               } else {
+                localStorage.setItem('selectedDate', JSON.stringify(selectedDate));
                 setDate(selectedDate);
               }
             }}

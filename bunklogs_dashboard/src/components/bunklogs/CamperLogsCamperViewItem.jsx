@@ -3,8 +3,6 @@ import { Link } from 'react-router-dom';
 
 function CamperLogsCamperViewItem(props) {
 
-  //console.log('props:', props); // Debug
-
   const getBunkIdForBunkLog = (bunk_log) => {
       // Check if bunk_log is an object and has the 'bunk' property
       console.log('IN FUNCTION', bunk_log);
@@ -57,7 +55,7 @@ function CamperLogsCamperViewItem(props) {
       <tr>
         <Link 
           className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap" 
-          to={`/bunk/${props.bunk_assignment.bunk.id}`}
+          to={`/bunk/${props.bunk_id}/${props.date}`}
           state={{ selectedDate: props.date }}
         >
           <td className="p-3 whitespace-wrap">

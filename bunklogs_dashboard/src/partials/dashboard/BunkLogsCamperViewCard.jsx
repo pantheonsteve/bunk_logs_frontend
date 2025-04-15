@@ -83,18 +83,19 @@ function BunkLogsCamperViewCard({camperData}) {
                         </tr>
                     </thead>
                         {bunk_logs.map((item) => (
-                    <CamperLogsCamperViewItem 
-                        key={item.id}
-                        id={item.id}
-                        bunk_assignment={item.bunk_assignment}
-                        date={item.date}
-                        social_score={item.social_score}
-                        behavior_score={item.behavior_score}
-                        participation_score={item.participation_score}
-                        request_camper_care_help={item.request_camper_care_help}
-                        request_unit_head_help={item.request_unit_head_help}
-                        description={item.description}
-                    />
+                            <CamperLogsCamperViewItem 
+                                key={item.id}
+                                id={item.id}
+                                bunk_assignment_id={item.bunk_assignment.id}
+                                bunk_id={item.bunk_assignment.bunk.id}
+                                date={item.date}
+                                social_score={item.social_score}
+                                behavior_score={item.behavior_score}
+                                participation_score={item.participation_score}
+                                request_camper_care_help={item.request_camper_care_help}
+                                request_unit_head_help={item.request_unit_head_help}
+                                description={item.description}
+                            />
                         ))}
                 </table>
             </div>

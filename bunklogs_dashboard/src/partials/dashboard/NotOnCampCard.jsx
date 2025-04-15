@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useBunk } from '../../context/BunkContext';
 
 function NotOnCampCard({ bunkData }) {
+
+    const { bunkBunkData } = useBunk();
+
 
     const date = bunkData.date;
     const campers = bunkData.campers;
@@ -43,9 +47,11 @@ function NotOnCampCard({ bunkData }) {
             <tbody className="text-sm font-medium divide-y divide-gray-100 dark:divide-gray-700/60">
               {/* Row */}
               {Array.isArray(data) ? (
-                data.map((item) => {
+                data.map((item, index) => {
+// Create a reliable key using camper info or fallback to index
+                  const uniqueKey = item.id || `${item.camper_first_name}-${item.camper_last_name}-${index}`;
                   return (
-                  <tr key={item.id}>
+                  <tr key={uniqueKey}>
                       <td className="p-2">
                       <div className="flex items-center">
                           <img className="shrink-0 mr-2 sm:mr-3" width="36" height="36" viewBox="0 0 36 36" src="../../src/images/user-36-06.jpg" />

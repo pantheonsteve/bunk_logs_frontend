@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
-import SidebarLinkGroup from "./SidebarLinkGroup";
+import SidebarLinkGroup from "../SidebarLinkGroup";
 
-import CamperList from "./sidebar/CamperList";
+import CamperList from "./CamperList";
 
-function CamperPageSidebar({
+function BunkPageSidebar({
   sidebarOpen,
   setSidebarOpen,
   variant = 'default',
+  date, // Default to today's date
   bunk,
   openBunkModal,
 }) {
   const location = useLocation();
   const { pathname } = location;
-  const date = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
 
   const trigger = useRef(null);
   const sidebar = useRef(null);
@@ -1453,4 +1453,4 @@ function CamperPageSidebar({
   );
 }
 
-export default CamperPageSidebar;
+export default BunkPageSidebar;

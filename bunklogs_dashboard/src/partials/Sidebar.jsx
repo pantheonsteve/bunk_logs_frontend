@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 
 import SidebarLinkGroup from "./SidebarLinkGroup";
 
-import CamperList from "./sidebar/CamperList";
+import CamperList from "./bunk-dashboard/CamperList";
 
 function Sidebar({
   sidebarOpen,

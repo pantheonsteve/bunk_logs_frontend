@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useBunk } from '../../context/BunkContext';
 
 function CamperLogsBunkViewItem(props) {
+
+  const { bunkDigityData, loading, error } = useBunk();
 
     // Score background color mapping
   const getScoreBackgroundColor = (score) => {
@@ -88,7 +91,7 @@ function CamperLogsBunkViewItem(props) {
           <div className="bg-gray-50 dark:bg-gray-950/[0.15] dark:text-gray-400 p-3 -mt-3">
             <div className="text-sm mb-3">
               {/* Note: Using dangerouslySetInnerHTML requires that content is properly sanitized to prevent XSS attacks */}
-              <div dangerouslySetInnerHTML={{ __html: props.descriptionBody }}></div>
+              <div dangerouslySetInnerHTML={{ __html: props.description }}></div>
               <div className="font-medium text-gray-800 dark:text-gray-100 mb-1">Reporting Counselor: {props.counselor_name}</div>
             </div>
           </div>

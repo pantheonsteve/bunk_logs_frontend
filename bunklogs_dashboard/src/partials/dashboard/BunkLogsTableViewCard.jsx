@@ -33,6 +33,7 @@ function BunkLogsTableViewCard({ bunkData }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);  // Changed to false since data is passed as prop
   const [data, setData] = useState(bunkData);
+  
 
   const filterNotOnCamp = (campers) => {
     return campers.filter((camper) => camper.bunk_log?.not_on_camp === false);
@@ -116,12 +117,13 @@ function BunkLogsTableViewCard({ bunkData }) {
               </tr>
             </thead>
                 { 
-                  data.map(item => {
+                  data.map((item, index) => {
+                    const uniqueKey = item.id || `${item.camper_first_name}-${item.camper_last_name}-${index}`;
                     const counselor = item?.bunk_assignment?.bunk?.counselors?.find(c => c.id === item.bunk_log.counselor) || "Unknown";
                     const counselorName = `${counselor.first_name} ${counselor.last_name}`;
                     return (
                       <CamperLogsBunkViewItem
-                        key={item.id}
+                        key={uniqueKey}
                         id={item.id}
                         camper_id={item.camper_id}
                         image={item.image}
@@ -133,12 +135,8 @@ function BunkLogsTableViewCard({ bunkData }) {
                         participation_score={item.bunk_log.participation_score}
                         camper_care_help={item.bunk_log.request_camper_care_help}
                         unit_head_help={item.bunk_log.request_unit_head_help}
-                        email={item.email}
-                        location={item.location}
                         date={item.bunk_log.date}
-                        amount={item.amount}
-                        descriptionTitle={item.descriptionTitle}
-                        descriptionBody={item.bunk_log.description}
+                        description={item.bunk_log.description}
                       />
                     )
                   })

@@ -38,6 +38,7 @@ function CamperList({ bunk_id, date, openBunkModal, refreshTrigger }) {
                         className="btn text-black-100"
                         aria-controls="feedback-modal"
                         onClick={(e) => {
+                          console.log('Clicked');
                           e.stopPropagation();
                           // Use the function from props and pass camper_id
                           openBunkModal(camper.camper_id, camper.bunk_assignment.id);
