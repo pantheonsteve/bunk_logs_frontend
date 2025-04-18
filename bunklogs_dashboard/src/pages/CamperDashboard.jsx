@@ -13,6 +13,7 @@ import ScoresBarChartCard from '../partials/dashboard/ScoresBarChartCard';
 import BarChart03 from '../charts/BarChart03';
 import ScoresLineChartCard from '../partials/dashboard/ScoresLineChartCard';
 import DashboardCard04 from '../partials/dashboard/DashboardCard04';
+import CamperScoresChart from '../partials/dashboard/CamperScoresChart';
 
 function CamperDashboard() {
 
@@ -134,7 +135,6 @@ function CamperDashboard() {
             {/* Cards - only render when data is loaded and no errors */}
             {!loading && !error && (
               <div className="grid grid-cols-12 gap-6">
-                <ScoresBarChartCard camperData={data.bunk_logs} />
                 <ScoresLineChartCard camperData={data.bunk_logs} />
                 <BunkLogsCamperViewCard camperData={data} />
               </div>

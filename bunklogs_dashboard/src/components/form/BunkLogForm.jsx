@@ -24,7 +24,12 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   // State for camper data
   const [camperData, setCamperData] = useState(null);
 
-
+  // Check if an existing bunk log is available
+  const existingBunkLogCheck = Data?.campers?.find(item => item.camper_id === camperIdToUse);
+  const hasExistingBunkLog = existingBunkLogCheck?.bunk_log ? true : false;
+  
+  // View/Edit mode toggle - start in view mode if there's existing data
+  const [isViewMode, setIsViewMode] = useState(hasExistingBunkLog);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -117,17 +122,20 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
 
       quillRef.current = new Quill(editorRef.current, {
         modules: {
-          toolbar: toolbarOptions
+          toolbar: isViewMode ? false : toolbarOptions
         },
-        theme: 'snow'
+        theme: 'snow',
+        readOnly: isViewMode
       });
 
       // Update form data when editor content changes
       quillRef.current.on('text-change', function() {
-        setFormData(prev => ({
-          ...prev,
-          description: quillRef.current.root.innerHTML
-        }));
+        if (!isViewMode) {
+          setFormData(prev => ({
+            ...prev,
+            description: quillRef.current.root.innerHTML
+          }));
+        }
       });
     }
     
@@ -135,7 +143,29 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
     if (formData.not_on_camp && quillRef.current) {
       quillRef.current.setText('');
     }
-  }, [formData.not_on_camp]);
+    
+    // Update editor's readonly state when view mode changes
+    if (quillRef.current) {
+      quillRef.current.enable(!isViewMode);
+      
+      // Hide/show toolbar based on view mode
+      const toolbarElement = editorRef.current.parentElement.querySelector('.ql-toolbar');
+      if (toolbarElement) {
+        toolbarElement.style.display = isViewMode ? 'none' : 'block';
+      }
+    }
+  }, [formData.not_on_camp, isViewMode]);
+  
+  // Update Quill editor content when description changes in formData
+  useEffect(() => {
+    if (quillRef.current && formData.description) {
+      // Only update if the current content differs from formData.description
+      // to avoid an infinite loop
+      if (quillRef.current.root.innerHTML !== formData.description) {
+        quillRef.current.root.innerHTML = formData.description;
+      }
+    }
+  }, [formData.description]);
   
   // Fetch counselors
   useEffect(() => {
@@ -150,6 +180,8 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   
   // Handle form input changes
   const handleChange = (e) => {
+    if (isViewMode) return; // Don't update form in view mode
+    
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -160,6 +192,8 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isViewMode) return; // Don't submit in view mode
+    
     setLoading(true);
     setError(null);
     
@@ -251,18 +285,45 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   };
 
   const campers = camperData?.campers || [];
-  const selectedCamper = campers.find(c => c.camper_id == camperIdToUse);
+  const selectedCamper = campers.find(c => c.camper_id == camperIdToUse) || 
+                        Data?.campers?.find(c => c.camper_id === camperIdToUse);
   
   // Get camper name
   const camperName = selectedCamper
     ? `${selectedCamper.camper_first_name} ${selectedCamper.camper_last_name}`
     : 'Selected Camper';
+    
+  // Find counselor name for view mode
+  const getCounselorName = () => {
+    if (!formData.counselor) return '';
+    const counselor = counselors.find(c => c.id === formData.counselor);
+    return counselor ? counselor.name : '';
+  };
 
   return (
     <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-        Bunk Log Entry for {camperName}
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+          {camperName}
+        </h1>
+        {/* View/Edit Mode Toggle - Only show if there's an existing bunk log */}
+        {hasExistingBunkLog && (
+          <div className="flex items-center">
+            <span className="mr-2 text-sm text-gray-600 dark:text-gray-300">
+              {isViewMode ? 'View Mode' : 'Edit Mode'}
+            </span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox"
+                className="sr-only peer"
+                checked={!isViewMode}
+                onChange={() => setIsViewMode(!isViewMode)}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        )}
+      </div>
       
       {success && (
         <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
@@ -275,8 +336,6 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
           {error}
         </div>
       )}
-
-      
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Hidden field for camper_id */}
@@ -307,38 +366,65 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
             <label htmlFor="counselor" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Reporting Counselor
             </label>
-            <select
-              id="counselor"
-              name="counselor"
-              value={formData.counselor}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            >
-              <option value="">Select Counselor</option>
-              {counselors.map(counselor => (
-                <option key={counselor.id} value={counselor.id}>
-                  {counselor.name}
-                </option>
-              ))}
-            </select>
+            {isViewMode ? (
+              <div className="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                {getCounselorName()}
+              </div>
+            ) : (
+              <select
+                id="counselor"
+                name="counselor"
+                value={formData.counselor}
+                onChange={handleChange}
+                required
+                disabled={isViewMode}
+                className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+                  isViewMode ? 'bg-gray-100 cursor-not-allowed' : ''
+                }`}
+              >
+                <option value="">Select Counselor</option>
+                {counselors.map(counselor => (
+                  <option key={counselor.id} value={counselor.id}>
+                    {counselor.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
         {/* Not on Camp Checkbox */}
         <div className="space-y-2">
           <div className="flex items-center">
-            <input
-              id="not_on_camp"
-              name="not_on_camp"
-              type="checkbox"
-              className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
-              checked={formData.not_on_camp}
-              onChange={handleChange}
-            />
-            <label htmlFor="not_on_camp" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Camper not on camp today
-            </label>
+            {isViewMode ? (
+              <>
+                <div className={`h-5 w-5 border ${formData.not_on_camp ? 'bg-blue-600' : 'bg-white'} border-gray-300 rounded`}>
+                  {formData.not_on_camp && (
+                    <svg className="h-4 w-4 text-white mx-auto my-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <label className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Camper not on camp today
+                </label>
+              </>
+            ) : (
+              <>
+                <input
+                  id="not_on_camp"
+                  name="not_on_camp"
+                  type="checkbox"
+                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
+                  checked={formData.not_on_camp}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                />
+                <label htmlFor="not_on_camp" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Camper not on camp today
+                </label>
+              </>
+            )}
           </div>
           <p className="text-xs text-gray-500">
             Check this if the camper was absent from camp today. All other fields will be disabled.
@@ -351,31 +437,67 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
             {/* Help Request Checkboxes */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-center">
-                <input
-                  id="request_unit_head_help"
-                  name="request_unit_head_help"
-                  type="checkbox"
-                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
-                  checked={formData.request_unit_head_help}
-                  onChange={handleChange}
-                />
-                <label htmlFor="request_unit_head_help" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Unit Head Help Requested
-                </label>
+                {isViewMode ? (
+                  <>
+                    <div className={`h-5 w-5 border ${formData.request_unit_head_help ? 'bg-blue-600' : 'bg-white'} border-gray-300 rounded`}>
+                      {formData.request_unit_head_help && (
+                        <svg className="h-4 w-4 text-white mx-auto my-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <label className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Unit Head Help Requested
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      id="request_unit_head_help"
+                      name="request_unit_head_help"
+                      type="checkbox"
+                      className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
+                      checked={formData.request_unit_head_help}
+                      onChange={handleChange}
+                      disabled={isViewMode}
+                    />
+                    <label htmlFor="request_unit_head_help" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Unit Head Help Requested
+                    </label>
+                  </>
+                )}
               </div>
               
               <div className="flex items-center">
-                <input
-                  id="request_camper_care_help"
-                  name="request_camper_care_help"
-                  type="checkbox"
-                  className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
-                  checked={formData.request_camper_care_help}
-                  onChange={handleChange}
-                />
-                <label htmlFor="request_camper_care_help" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Camper Care Help Requested
-                </label>
+                {isViewMode ? (
+                  <>
+                    <div className={`h-5 w-5 border ${formData.request_camper_care_help ? 'bg-blue-600' : 'bg-white'} border-gray-300 rounded`}>
+                      {formData.request_camper_care_help && (
+                        <svg className="h-4 w-4 text-white mx-auto my-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <label className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Camper Care Help Requested
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      id="request_camper_care_help"
+                      name="request_camper_care_help"
+                      type="checkbox"
+                      className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:border-gray-600"
+                      checked={formData.request_camper_care_help}
+                      onChange={handleChange}
+                      disabled={isViewMode}
+                    />
+                    <label htmlFor="request_camper_care_help" className="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Camper Care Help Requested
+                    </label>
+                  </>
+                )}
               </div>
             </div>
             
@@ -397,9 +519,10 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
                   type="range"
                   min="1"
                   max="5"
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  className={`w-full h-2 bg-gray-200 rounded-lg appearance-none ${isViewMode ? 'cursor-not-allowed' : 'cursor-pointer'} dark:bg-gray-700`}
                   value={formData.behavior_score}
                   onChange={handleChange}
+                  disabled={isViewMode}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>Poor</span>
@@ -421,9 +544,10 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
                   type="range"
                   min="1"
                   max="5"
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  className={`w-full h-2 bg-gray-200 rounded-lg appearance-none ${isViewMode ? 'cursor-not-allowed' : 'cursor-pointer'} dark:bg-gray-700`}
                   value={formData.participation_score}
                   onChange={handleChange}
+                  disabled={isViewMode}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>Poor</span>
@@ -445,9 +569,10 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
                   type="range"
                   min="1"
                   max="5"
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  className={`w-full h-2 bg-gray-200 rounded-lg appearance-none ${isViewMode ? 'cursor-not-allowed' : 'cursor-pointer'} dark:bg-gray-700`}
                   value={formData.social_score}
                   onChange={handleChange}
+                  disabled={isViewMode}
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>Poor</span>
@@ -461,28 +586,34 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Daily Report
               </label>
-              <div className="border border-gray-300 rounded-md dark:border-gray-600 overflow-hidden">
+              <div className={`border border-gray-300 rounded-md dark:border-gray-600 overflow-hidden ${isViewMode ? 'quill-view-only' : ''}`}>
                 <Wysiwyg 
                   ref={editorRef} 
-                  onChange={(content) => setFormData(prev => ({ ...prev, description: content }))}
+                  onChange={(content) => {
+                    if (!isViewMode) {
+                      setFormData(prev => ({ ...prev, description: content }))
+                    }
+                  }}
                 />
               </div>
             </div>
           </>
         )}
 
-        {/* Submit Button */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className={`px-6 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-              loading ? 'opacity-70 cursor-not-allowed' : ''
-            }`}
-          >
-            {loading ? 'Submitting...' : 'Submit Bunk Log'}
-          </button>
-        </div>
+        {/* Submit Button - Only show in edit mode */}
+        {!isViewMode && (
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={loading}
+              className={`px-6 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                loading ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+            >
+              {loading ? 'Submitting...' : 'Submit Bunk Log'}
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

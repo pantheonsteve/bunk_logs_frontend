@@ -50,6 +50,8 @@ function CamperLogsCamperViewItem(props) {
 
   const [open, setOpen] = useState(false);
 
+  console.log('CamperLogsCamperViewItem props:', props); // Debug
+
   return (
     <tbody className="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
       <tr>
@@ -62,36 +64,47 @@ function CamperLogsCamperViewItem(props) {
             <div className="text-center">{props.date}</div>
           </td>
         </Link>
-        <td className={`px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap ${getScoreBackgroundColor(props.social_score)}`}>
-          <div className="text-center">{props.social_score}</div>
-        </td>
-        <td className={`px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap ${getScoreBackgroundColor(props.behavior_score)}`}>
-          <div className="text-center">{props.behavior_score}</div>
-        </td>
-        <td className={`px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap ${getScoreBackgroundColor(props.participation_score)}`}>
-          <div className="text-center">{props.participation_score}</div>
-        </td>
-        <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div className="text-center">{getHelpRequestedIcon(props.request_camper_care_help)}</div>
-        </td>
-        <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-          <div className="text-center">{getHelpRequestedIcon(props.request_unit_head_help)}</div>
-        </td>
-        <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
-          <div className="flex items-center">
-            <button
-              className={`text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 ${open && 'rotate-180'}`}
-              aria-expanded={open}
-              onClick={() => setOpen(!open)}
-              aria-controls={`description-${props.id}`}
-            >
-              <span className="sr-only">Menu</span>
-              <svg className="w-8 h-8 fill-current" viewBox="0 0 32 32">
-                <path d="M16 20l-5.4-5.4 1.4-1.4 4 4 4-4 1.4 1.4z" />
-              </svg>
-            </button>
-          </div>
-        </td>
+        { props.not_on_camp === false && (
+        <>
+          <td className={`px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap ${getScoreBackgroundColor(props.social_score)}`}>
+            <div className="text-center">{props.social_score}</div>
+          </td>
+          <td className={`px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap ${getScoreBackgroundColor(props.behavior_score)}`}>
+            <div className="text-center">{props.behavior_score}</div>
+          </td>
+          <td className={`px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap ${getScoreBackgroundColor(props.participation_score)}`}>
+            <div className="text-center">{props.participation_score}</div>
+          </td>
+          <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div className="text-center">{getHelpRequestedIcon(props.request_camper_care_help)}</div>
+          </td>
+          <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div className="text-center">{getHelpRequestedIcon(props.request_unit_head_help)}</div>
+          </td>
+          <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
+            <div className="flex items-center">
+              <button
+                className={`text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 ${open && 'rotate-180'}`}
+                aria-expanded={open}
+                onClick={() => setOpen(!open)}
+                aria-controls={`description-${props.id}`}
+              >
+                <span className="sr-only">Menu</span>
+                <svg className="w-8 h-8 fill-current" viewBox="0 0 32 32">
+                  <path d="M16 20l-5.4-5.4 1.4-1.4 4 4 4-4 1.4 1.4z" />
+                </svg>
+              </button>
+            </div>
+          </td>
+        </>
+        )}
+        {props.not_on_camp === true && (
+          <td className="px-12 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
+            <div className="text-center">
+              <h2>Not On Camp</h2>
+            </div>
+          </td>
+        )}
       </tr>
       {/*
       Example of content revealing when clicking the button on the right side:

@@ -35,7 +35,7 @@ function CamperList({ bunk_id, date, openBunkModal, refreshTrigger }) {
           {data.map((camper) => (
                   <p key={camper.camper_id} className='w-full'>
                       <button
-                        className="btn text-black-100"
+                        className={`btn text-black-100 ${camper.bunk_log ? 'has-bunklog' : ''}`}
                         aria-controls="feedback-modal"
                         onClick={(e) => {
                           console.log('Clicked');
@@ -43,6 +43,7 @@ function CamperList({ bunk_id, date, openBunkModal, refreshTrigger }) {
                           // Use the function from props and pass camper_id
                           openBunkModal(camper.camper_id, camper.bunk_assignment.id);
                         }}
+                        title={camper.bunk_log ? "View/Edit Bunk Log" : "Create Bunk Log"}
                       >
                         <span>
                           {camper.bunk_log ? (

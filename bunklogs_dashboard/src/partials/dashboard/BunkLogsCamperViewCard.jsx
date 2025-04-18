@@ -89,6 +89,7 @@ function BunkLogsCamperViewCard({camperData}) {
                                 bunk_assignment_id={item.bunk_assignment.id}
                                 bunk_id={item.bunk_assignment.bunk.id}
                                 date={item.date}
+                                not_on_camp={item.not_on_camp}
                                 social_score={item.social_score}
                                 behavior_score={item.behavior_score}
                                 participation_score={item.participation_score}

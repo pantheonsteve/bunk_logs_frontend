@@ -37,9 +37,26 @@ function BunkDashboard() {
 
   const { bunkData, setBunkData } = useBunk();
   
+  // Add redirect if no date parameter
+  useEffect(() => {
+    if (!date || date === 'undefined') {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
+      console.log(`[BunkDashboard] No date in URL, redirecting to today: ${formattedDate}`);
+      navigate(`/bunk/${bunk_id}/${formattedDate}`, { replace: true });
+    }
+  }, [date, bunk_id, navigate]);
+  
   // Ensure proper date handling with timezone consistency
   const [selectedDate, setSelectedDate] = useState(() => {
-    if (date) {
+    if (!date) {
+      console.log('[BunkDashboard] No date provided in URL, using default date');
+      return new Date(); // Default to today if no date is provided
+    } else if (date && date !== 'undefined') {
       // Prioritize date from URL parameter
       const [year, month, day] = date.split('-').map(Number);
       console.log(`[BunkDashboard] Initializing with date from URL parameter: ${date}`);
