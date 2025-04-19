@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useBunk } from '../../context/BunkContext';
+import { useBunk } from '../../contexts/BunkContext';
 
 function CamperLogsBunkViewItem(props) {
 

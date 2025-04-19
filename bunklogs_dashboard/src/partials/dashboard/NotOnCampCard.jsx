@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useBunk } from '../../context/BunkContext';
+import { useBunk } from '../../contexts/BunkContext';
 
 function NotOnCampCard({ bunkData }) {
 

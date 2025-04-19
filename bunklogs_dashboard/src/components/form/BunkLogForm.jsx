@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -96,7 +97,7 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
       if (camperIdToUse) {
         try {
           const response = await axios.get(
-            `http://127.0.0.1:8000/api/v1/bunklogs/${bunkIdToUse}/${date}`
+            `http://127.0.0.1:8000/api/v1/bunklogs/${bunkIdToUse}/${date}/`
           );
           setCamperData(response.data);
         } catch (err) {

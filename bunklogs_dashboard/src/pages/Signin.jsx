@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import GoogleLoginButton from '../components/GoogleLoginButton';
 
 import AuthImage from "../images/auth-image.jpg";
 
@@ -58,6 +59,14 @@ function Signin() {
                   <Link className="font-medium text-violet-500 hover:text-violet-600 dark:hover:text-violet-400" to="/signup">
                     Sign Up
                   </Link>
+                </div>
+                <div class name="text-sm">
+                  <GoogleLoginButton />{
+                    /* Uncomment this if you want to use the default Google login button */
+                    <button className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white ml-3">
+                      Sign in with Google
+                    </button>
+                  }
                 </div>
                 {/* Warning */}
                 <div className="mt-5">

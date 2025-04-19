@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useBunk } from '../context/BunkContext';
+import { useBunk } from '../contexts/BunkContext';
 import { saveSelectedDate, getSelectedDate } from '../utils/stateUtils';
 
 import BunkPageSidebar from '../partials/bunk-dashboard/BunkPageSidebar';
@@ -137,7 +137,7 @@ function BunkDashboard() {
         
         console.log(`[BunkDashboard] Fetching data for date: ${date}`);
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${date}`
+          `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${date}/`
         );
          
         console.log(`[BunkDashboard] Data fetched successfully. Campers: ${response.data?.campers?.length || 0}`);

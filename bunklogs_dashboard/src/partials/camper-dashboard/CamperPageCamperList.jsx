@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useBunk } from '../../context/BunkContext';
+import { useBunk } from '../../contexts/BunkContext';
 
 function CamperPageCamperList({ bunk_id, date }) {
     // Get data from context instead of making a separate API call

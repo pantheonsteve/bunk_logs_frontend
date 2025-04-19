@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate,useParams } from 'react-router-dom';
-import { BunkProvider } from './context/BunkContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { BunkProvider } from './contexts/BunkContext';
 import {
   Routes,
   Route,
@@ -34,15 +35,17 @@ function App() {
   }, [location.pathname]); // triggered on route change
 
   return (
-    <BunkProvider>
-      <Routes>
-        <Route path="/signin" element={<Signin />} />
-        <Route path="/bunk/:bunk_id" element={<BunkRedirect />} />
-        <Route exact path="/bunk/:bunk_id/:date" element={<BunkDashboard />} />
-        <Route exact path="/camper/:camper_id" element={<CamperDashboard />} />
-        <Route exact path="/" element={<Dashboard />} />
-      </Routes>
-    </BunkProvider>
+    <AuthProvider>
+      <BunkProvider>
+        <Routes>
+          <Route path="/signin" element={<Signin />} />
+          <Route path="/bunk/:bunk_id" element={<BunkRedirect />} />
+          <Route exact path="/bunk/:bunk_id/:date" element={<BunkDashboard />} />
+          <Route exact path="/camper/:camper_id" element={<CamperDashboard />} />
+          <Route exact path="/" element={<Dashboard />} />
+        </Routes>
+      </BunkProvider>
+    </AuthProvider>
   );
 }
 
