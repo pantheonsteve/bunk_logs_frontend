@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Transition from '../utils/Transition';
+import { useAuth } from '../contexts/AuthContext';
 
 import UserAvatar from '../images/user-avatar-32.png';
 
@@ -9,6 +10,7 @@ function DropdownProfile({
 }) {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user } = useAuth();
 
   const trigger = useRef(null);
   const dropdown = useRef(null);
@@ -69,7 +71,28 @@ function DropdownProfile({
         >
           <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-gray-200 dark:border-gray-700/60">
             <div className="font-medium text-gray-800 dark:text-gray-100">URJ - Crane Lake Camp</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 italic">Administrator</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 italic">{user?.name || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.email || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.role || 'User'}</div>
+            {user?.bunks? (
+              <div className="text-xs text-gray-500 dark:text-gray-400">{user?.bunks.map((bunk) => (
+                <span key={bunk.id} className="mr-1">
+                  <p>{bunk.id}</p>
+                  <p>{bunk.name}</p>
+                </span>
+              ))}</div>
+            ) : (
+              <div className="text-xs text-gray-500 dark:text-gray-400">No Bunks Assigned</div>
+            )}
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.bunk_name || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.bunk || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.unit || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.counselor || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.bunk_id || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.unit_id || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.counselor_id || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.camp_id || 'User'}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{user?.camp_name || 'User'}</div>
           </div>
           <ul>
             <li>

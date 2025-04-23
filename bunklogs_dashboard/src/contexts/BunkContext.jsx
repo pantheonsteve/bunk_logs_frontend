@@ -1,8 +1,11 @@
 // BunkContext.jsx
 import React, { createContext, useState, useContext } from 'react';
 
-// Create the context
-const BunkContext = createContext();
+// Create the context with default values to prevent destructuring errors
+const BunkContext = createContext({
+  bunkData: null,
+  setBunkData: () => {}
+});
 
 // Create a custom hook to use the context
 export function useBunk() {

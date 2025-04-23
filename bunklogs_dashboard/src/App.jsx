@@ -1,12 +1,7 @@
-import React, { useEffect } from 'react';
-import { Navigate,useParams } from 'react-router-dom';
+import React from 'react';
 import { AuthProvider } from './contexts/AuthContext';
+import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { BunkProvider } from './contexts/BunkContext';
-import {
-  Routes,
-  Route,
-  useLocation
-} from 'react-router-dom';
 
 import './css/style.css';
 
@@ -16,7 +11,7 @@ import './charts/ChartjsConfig';
 import BunkDashboard from './pages/BunkDashboard';
 import CamperDashboard from './pages/CamperDashboard';
 import Dashboard from './pages/Dashboard';
-import Signin from './pages/Signin';
+import SignInPage from './pages/SignInPage';
 
 function BunkRedirect() {
   const { bunk_id } = useParams();
@@ -25,24 +20,17 @@ function BunkRedirect() {
 }
 
 function App() {
-
-  const location = useLocation();
-
-  useEffect(() => {
-    document.querySelector('html').style.scrollBehavior = 'auto'
-    window.scroll({ top: 0 })
-    document.querySelector('html').style.scrollBehavior = ''
-  }, [location.pathname]); // triggered on route change
-
   return (
     <AuthProvider>
       <BunkProvider>
         <Routes>
-          <Route path="/signin" element={<Signin />} />
+          <Route path="/signin" element={<SignInPage />} />
           <Route path="/bunk/:bunk_id" element={<BunkRedirect />} />
-          <Route exact path="/bunk/:bunk_id/:date" element={<BunkDashboard />} />
-          <Route exact path="/camper/:camper_id" element={<CamperDashboard />} />
-          <Route exact path="/" element={<Dashboard />} />
+          <Route path="/bunk/:bunk_id/:date" element={<BunkDashboard />} />
+          <Route path="/camper/:camper_id" element={<CamperDashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Navigate to="/signin" />} />
+          {/* Add other routes as needed */}
         </Routes>
       </BunkProvider>
     </AuthProvider>

@@ -1,13 +1,14 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Wysiwyg from './Wysiwyg';
+import { useAuth } from '../../contexts/AuthContext';
 
 function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const params = useParams();
+  const { token } = useAuth(); // Extract token from auth context
   
   // Use props or fallback to params
   const bunkIdToUse = bunk_id || params.bunk_id; //WORKING
@@ -232,7 +233,8 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
         submissionData,
         {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // Add the Authorization header with token
           }
         }
       );
@@ -300,6 +302,8 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
     const counselor = counselors.find(c => c.id === formData.counselor);
     return counselor ? counselor.name : '';
   };
+
+  console.log('useAuth:', useAuth()); // Debug
 
   return (
     <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-xl p-6">

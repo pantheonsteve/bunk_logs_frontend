@@ -134,11 +134,14 @@ function BunkDashboard() {
         const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
         const day = String(selectedDate.getDate()).padStart(2, '0');
         const formattedDate = `${year}-${month}-${day}`;
+        console.log(`Formatted Date: ${formattedDate}`);
         
-        console.log(`[BunkDashboard] Fetching data for date: ${date}`);
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${date}/`
-        );
+        
+        const url = `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${formattedDate}/`;
+        console.log(`[BunkDashboard] Fetching data from URL: ${url}`);
+        const response = await axios.get(url, {
+          withCredentials: true
+        })
          
         console.log(`[BunkDashboard] Data fetched successfully. Campers: ${response.data?.campers?.length || 0}`);
         setData(response.data);
