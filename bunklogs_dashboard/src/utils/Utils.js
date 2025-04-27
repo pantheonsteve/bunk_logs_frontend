@@ -37,15 +37,47 @@ const adjustOKLCHOpacity = (oklchColor, opacity) => {
   return oklchColor.replace(/oklch\((.*?)\)/, (match, p1) => `oklch(${p1} / ${opacity})`);
 };
 
+const adjustRGBOpacity = (rgbColor, opacity) => {
+  // Convert RGB to RGBA or update existing RGBA opacity
+  if (rgbColor.startsWith('rgba')) {
+    return rgbColor.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/, 
+      (match, r, g, b) => `rgba(${r}, ${g}, ${b}, ${opacity})`);
+  } else {
+    return rgbColor.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/, 
+      (match, r, g, b) => `rgba(${r}, ${g}, ${b}, ${opacity})`);
+  }
+};
+
 export const adjustColorOpacity = (color, opacity) => {
+  // Handle null or undefined colors
+  if (!color) {
+    return `rgba(0, 0, 0, ${opacity})`;
+  }
+  
   if (color.startsWith('#')) {
     return adjustHexOpacity(color, opacity);
   } else if (color.startsWith('hsl')) {
     return adjustHSLOpacity(color, opacity);
   } else if (color.startsWith('oklch')) {
     return adjustOKLCHOpacity(color, opacity);
+  } else if (color.startsWith('rgb')) {
+    return adjustRGBOpacity(color, opacity);
   } else {
-    throw new Error('Unsupported color format');
+    // Fallback: assume it's a named color and create a div to convert it
+    try {
+      const tempDiv = document.createElement('div');
+      tempDiv.style.color = color;
+      document.body.appendChild(tempDiv);
+      
+      const computedColor = window.getComputedStyle(tempDiv).color;
+      document.body.removeChild(tempDiv);
+      
+      // Now we have RGB, apply opacity
+      return adjustRGBOpacity(computedColor, opacity);
+    } catch (e) {
+      console.warn(`Could not process color: ${color}`, e);
+      return `rgba(0, 0, 0, ${opacity})`;
+    }
   }
 };
 

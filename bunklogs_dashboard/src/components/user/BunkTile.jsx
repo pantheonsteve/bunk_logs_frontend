@@ -10,7 +10,7 @@ import { useLocation } from 'react-router-dom';
 import { useRef } from 'react';
 
 
-function BunkTile({ bunk_name, bunk_id }) {
+function BunkTile({ cabin, session, bunk_id, counselors}) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,7 +29,8 @@ function BunkTile({ bunk_name, bunk_id }) {
                         <path d="M12 17a.833.833 0 01-.833-.833 3.333 3.333 0 00-3.334-3.334.833.833 0 110-1.666 3.333 3.333 0 003.334-3.334.833.833 0 111.666 0 3.333 3.333 0 003.334 3.334.833.833 0 110 1.666 3.333 3.333 0 00-3.334 3.334c0 .46-.373.833-.833.833z" />
                         </svg>
                     </div>
-                    <h3 className="text-lg text-gray-800 dark:text-gray-100 font-semibold">{bunk_name}</h3>
+                    <h3 className="text-lg text-gray-800 dark:text-gray-100 font-semibold">{cabin} {session}</h3>
+                    <p>{counselors}</p>
                 </header>
                 {/* Price */}
                 <div className="text-gray-800 dark:text-gray-100 font-bold mb-4">

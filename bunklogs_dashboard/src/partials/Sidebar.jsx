@@ -4,6 +4,8 @@ import { NavLink, useLocation } from "react-router-dom";
 import SidebarLinkGroup from "./SidebarLinkGroup";
 
 import CamperList from "./bunk-dashboard/CamperList";
+import { useAuth } from '../contexts/AuthContext';
+import ErrorNotification from '../components/ErrorNotification';
 
 function Sidebar({
   sidebarOpen,
@@ -21,6 +23,8 @@ function Sidebar({
 
   const storedSidebarExpanded = localStorage.getItem("sidebar-expanded");
   const [sidebarExpanded, setSidebarExpanded] = useState(storedSidebarExpanded === null ? false : storedSidebarExpanded === "true");
+
+  const { error, setError } = useAuth();
 
   // close on click outside
   useEffect(() => {
@@ -54,6 +58,17 @@ function Sidebar({
 
   return (
     <div className="min-w-fit">
+      {/* Show auth errors if any */}
+      {error && (
+        <div className="fixed top-4 right-4 z-50">
+          <ErrorNotification 
+            message={error} 
+            onDismiss={() => setError(null)}
+            className="w-72"
+          />
+        </div>
+      )}
+      
       {/* Sidebar backdrop (mobile only) */}
       <div
         className={`fixed inset-0 bg-gray-900/30 z-40 lg:hidden lg:z-auto transition-opacity duration-200 ${

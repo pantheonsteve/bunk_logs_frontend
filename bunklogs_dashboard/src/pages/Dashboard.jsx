@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Sidebar from '../partials/Sidebar';
 import UserInfo from '../components/user/UserInfo';
 import Header from '../partials/Header';
+import { useAuth } from '../contexts/AuthContext';
 import FilterButton from '../components/DropdownFilter';
 import Datepicker from '../components/Datepicker';
 import DashboardCard01 from '../partials/dashboard/DashboardCard01';
@@ -21,6 +22,9 @@ function Dashboard() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  console.log('email:', useAuth().user?.email);
+  console.log('user:', useAuth().user);
+
   return (
     <div className="flex h-[100dvh] overflow-hidden">
 
@@ -35,7 +39,7 @@ function Dashboard() {
 
         <main className="grow">
 
-          <UserInfo />
+          <UserInfo/>
           
         </main>
 

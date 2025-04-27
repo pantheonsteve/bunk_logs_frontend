@@ -12,12 +12,8 @@ import NotOnCampCard from '../partials/dashboard/NotOnCampCard';
 import CamperCareHelpRequestedCard from '../partials/dashboard/CamperCareHelpRequestedCard';
 import UnitHeadHelpRequestedCard from '../partials/dashboard/UnitHeadHelpRequestedCard';
 import BunkLogsTableViewCard from '../partials/dashboard/BunkLogsTableViewCard';
-import BunkChartTitleCard from '../partials/dashboard/BunkChartTitleCard';
-import Banner from '../partials/Banner';
-import CategoryScoreCard from '../partials/dashboard/CategoryScoreCard';
 import BunkLabelCard from '../partials/dashboard/BunkLabelCard';
 import BunkLogForm from '../components/form/BunkLogForm';
-import Wysiwyg from '../components/form/Wysiwyg';
 import BunkLogFormModal from '../components/modals/BunkLogFormModal';
 
 function BunkDashboard() {
@@ -137,7 +133,7 @@ function BunkDashboard() {
         console.log(`Formatted Date: ${formattedDate}`);
         
         
-        const url = `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/${formattedDate}/`;
+        const url = `http://127.0.0.1:8000/api/v1/bunklogs/${bunk_id}/logs/${formattedDate}/`;
         console.log(`[BunkDashboard] Fetching data from URL: ${url}`);
         const response = await axios.get(url, {
           withCredentials: true

@@ -97,19 +97,35 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
     async function fetchCamperData() {
       if (camperIdToUse) {
         try {
+          // Check if token exists
+          if (!token) {
+            console.error('No authentication token available');
+            setError('Authentication required. Please log in again.');
+            return;
+          }
+          
+          const headers = {
+            'Authorization': `Token ${token}`
+          };
+          
           const response = await axios.get(
-            `http://127.0.0.1:8000/api/v1/bunklogs/${bunkIdToUse}/${date}/`
+            `http://127.0.0.1:8000/api/v1/bunklogs/${bunkIdToUse}/${date}/`,
+            { headers }
           );
           setCamperData(response.data);
         } catch (err) {
           console.error('Error fetching camper data:', err);
-          setError('Failed to load camper data');
+          if (err.response?.status === 401) {
+            setError('Authentication expired. Please log in again.');
+          } else {
+            setError('Failed to load camper data');
+          }
         }
       }
     }
     
     fetchCamperData();
-  }, [camperIdToUse]);
+  }, [camperIdToUse, token, bunkIdToUse, date]); // Added missing dependencies
 
 
   // Initialize Quill editor
@@ -206,6 +222,15 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
       return;
     }
     
+    // Verify token exists before attempting submission
+    if (!token) {
+      setError('Authentication required. Please log in again.');
+      setLoading(false);
+      return;
+    }
+    
+    console.log('Form submission with token:', token); // Debug token value
+    
     // Log complete form data including WYSIWYG content
     console.log('Form Data being submitted:', {
       ...formData,
@@ -227,18 +252,29 @@ function BunkLogForm({ bunk_id, camper_id, date, data, onClose }) {
       // Get API base URL from environment variable or use default
       const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api/v1';
       
+      // Make sure we have a token
+      if (!token) {
+        setError('You must be logged in to submit a bunk log');
+        setLoading(false);
+        return;
+      }
+      
+      // Setup headers with proper authentication
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Token ${token}` // Ensure token is always included
+      };
+      
+      console.log('Sending with headers:', headers); // Debug headers
+      
       // API call to submit the form
       const response = await axios.post(
         `${API_BASE_URL}/bunklogs/`,
         submissionData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // Add the Authorization header with token
-          }
-        }
+        { headers, withCredentials: true } // Add withCredentials to include cookies
       );
 
+      console.log('submission response:', response); // Debug
       
       if (response.status === 201 || response.status === 200) {
         setSuccess(true);
